@@ -19,6 +19,7 @@ Route::put('/packages/{package}', [PackageController::class, 'update'])->name('p
 
 Route::post('/invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])
     ->name('invoices.generate-monthly');
+    
 Route::get('/invoices/export', [InvoiceController::class, 'export'])
     ->name('invoices.export');
 
