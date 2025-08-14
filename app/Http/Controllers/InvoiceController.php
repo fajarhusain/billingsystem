@@ -46,6 +46,7 @@ class InvoiceController extends Controller
     {
         $customers = Customer::where('status', 'active')->with('package')->get();
         return view('invoices.create', compact('customers'));
+        
     }
 
     public function store(Request $request)
@@ -81,7 +82,7 @@ class InvoiceController extends Controller
     public function generateMonthly(Request $request)
     {
         $validated = $request->validate([
-            'period' => 'required|string|regex:/^\d{2}\/\d{4}$/',
+            'period' => 'required|date_format:Y-m',
             'due_date' => 'required|date'
         ]);
 
@@ -117,33 +118,33 @@ class InvoiceController extends Controller
     }
 
     public function markAsPaid(Request $request, Invoice $invoice)
-    {
-        $validated = $request->validate([
-            'payment_date' => 'required|date',
-            'payment_method' => 'required|string',
-            'reference_number' => 'nullable|string',
-            'notes' => 'nullable|string'
-        ]);
+{
+    $validated = $request->validate([
+        'payment_date' => 'required|date',
+        'payment_method' => 'required|string',
+        'reference_number' => 'nullable|string',
+        'notes' => 'nullable|string'
+    ]);
 
-        $invoice->update([
-            'status' => 'paid',
-            'payment_date' => $validated['payment_date'],
-            'payment_method' => $validated['payment_method']
-        ]);
+    $invoice->update([
+        'status' => 'paid',
+        'payment_date' => $validated['payment_date'],
+        'payment_method' => $validated['payment_method']
+    ]);
 
-        // Create payment record
-        Payment::create([
-            'invoice_id' => $invoice->id,
-            'amount' => $invoice->amount,
-            'payment_date' => $validated['payment_date'],
-            'payment_method' => $validated['payment_method'],
-            'reference_number' => $validated['reference_number'] ?? null,
-            'notes' => $validated['notes'] ?? null
-        ]);
+    Payment::create([
+        'invoice_id' => $invoice->id,
+        'amount' => $invoice->amount,
+        'payment_date' => $validated['payment_date'],
+        'payment_method' => $validated['payment_method'],
+        'reference_number' => $validated['reference_number'] ?? null,
+        'notes' => $validated['notes'] ?? null
+    ]);
 
-        return redirect()->route('invoices.show', $invoice)
-            ->with('success', 'Pembayaran berhasil dicatat!');
-    }
+    return redirect()->route('invoices.show', $invoice)
+        ->with('success', 'Pembayaran berhasil dicatat!');
+}
+
 
     public function destroy(Invoice $invoice)
     {
@@ -213,4 +214,6 @@ class InvoiceController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    
 }

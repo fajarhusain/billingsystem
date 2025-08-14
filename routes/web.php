@@ -12,11 +12,15 @@ Route::resource('packages', PackageController::class);
 Route::resource('customers', CustomerController::class);
 Route::resource('invoices', InvoiceController::class);
 
-Route::post('invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])
+
+Route::get('/packages/{package}/edit', [PackageController::class, 'edit'])->name('packages.edit');
+Route::put('/packages/{package}', [PackageController::class, 'update'])->name('packages.update');
+
+
+Route::post('/invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])
     ->name('invoices.generate-monthly');
-Route::patch('invoices/{invoice}/mark-as-paid', [InvoiceController::class, 'markAsPaid'])
-    ->name('invoices.mark-as-paid');
-Route::get('invoices-export', [InvoiceController::class, 'export'])
+Route::get('/invoices/export', [InvoiceController::class, 'export'])
     ->name('invoices.export');
 
-    
+    Route::patch('/invoices/{invoice}/mark-as-paid', [InvoiceController::class, 'markAsPaid'])
+    ->name('invoices.mark-as-paid');

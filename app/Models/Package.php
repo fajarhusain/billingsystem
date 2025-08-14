@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+// app/Models/Package.php
+
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,16 +14,16 @@ class Package extends Model
 
     protected $fillable = [
         'name',
+        'type',
         'speed_mbps',
         'quota',
         'price',
-        'is_active',
+        'status',
         'description'
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'is_active' => 'boolean',
         'speed_mbps' => 'integer'
     ];
 

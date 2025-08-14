@@ -1,22 +1,23 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Paket Baru')
+@section('title', 'Edit Paket')
 
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-warning text-white">
                     <h3 class="card-title">
-                        <i class="fas fa-plus-circle mr-2"></i>
-                        Tambah Paket Internet Baru
+                        <i class="fas fa-edit mr-2"></i>
+                        Edit Paket: {{ $package->name }}
                     </h3>
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('packages.store') }}" method="POST" id="packageForm">
+                    <form action="{{ route('packages.update', $package->id) }}" method="POST" id="packageForm">
                         @csrf
+                        @method('PUT')
 
                         <!-- Alert Error Validasi -->
                         @if($errors->any())
@@ -36,7 +37,7 @@
                                     <label for="name">Nama Paket <span class="text-danger">*</span></label>
                                     <input type="text" name="name" id="name" 
                                            class="form-control @error('name') is-invalid @enderror" 
-                                           value="{{ old('name') }}"
+                                           value="{{ old('name', $package->name) }}"
                                            placeholder="Contoh: Paket Internet 50Mbps" required>
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -51,9 +52,9 @@
                                     <select name="type" id="type" 
                                             class="form-control @error('type') is-invalid @enderror" required>
                                         <option value="">Pilih Tipe Paket</option>
-                                        <option value="home" {{ old('type') == 'home' ? 'selected' : '' }}>Home</option>
-                                        <option value="business" {{ old('type') == 'business' ? 'selected' : '' }}>Business</option>
-                                        <option value="corporate" {{ old('type') == 'corporate' ? 'selected' : '' }}>Corporate</option>
+                                        <option value="home" {{ old('type', $package->type) == 'home' ? 'selected' : '' }}>Home</option>
+                                        <option value="business" {{ old('type', $package->type) == 'business' ? 'selected' : '' }}>Business</option>
+                                        <option value="corporate" {{ old('type', $package->type) == 'corporate' ? 'selected' : '' }}>Corporate</option>
                                     </select>
                                     @error('type')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -70,7 +71,7 @@
                                     <div class="input-group">
                                         <input type="number" name="speed_mbps" id="speed_mbps" 
                                                class="form-control @error('speed_mbps') is-invalid @enderror" 
-                                               value="{{ old('speed_mbps') }}"
+                                               value="{{ old('speed_mbps', $package->speed_mbps) }}"
                                                placeholder="50" min="1" required>
                                         <div class="input-group-append">
                                             <span class="input-group-text">Mbps</span>
@@ -88,7 +89,7 @@
                                     <label for="quota">Kuota <span class="text-danger">*</span></label>
                                     <input type="text" name="quota" id="quota" 
                                            class="form-control @error('quota') is-invalid @enderror" 
-                                           value="{{ old('quota', 'Unlimited') }}"
+                                           value="{{ old('quota', $package->quota) }}"
                                            placeholder="Contoh: Unlimited" required>
                                     @error('quota')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -106,7 +107,7 @@
                                         </div>
                                         <input type="text" name="price" id="price" 
                                                class="form-control @error('price') is-invalid @enderror" 
-                                               value="{{ old('price') }}"
+                                               value="{{ old('price', $package->price) }}"
                                                placeholder="300000" required>
                                     </div>
                                     @error('price')
@@ -123,8 +124,8 @@
                                     <label for="status">Status <span class="text-danger">*</span></label>
                                     <select name="status" id="status" 
                                             class="form-control @error('status') is-invalid @enderror" required>
-                                        <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Aktif</option>
-                                        <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
+                                        <option value="active" {{ old('status', $package->status) == 'active' ? 'selected' : '' }}>Aktif</option>
+                                        <option value="inactive" {{ old('status', $package->status) == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
                                     </select>
                                     @error('status')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -138,7 +139,7 @@
                             <label for="description">Deskripsi</label>
                             <textarea name="description" id="description" rows="3"
                                       class="form-control @error('description') is-invalid @enderror"
-                                      placeholder="Deskripsi fitur paket...">{{ old('description') }}</textarea>
+                                      placeholder="Deskripsi fitur paket...">{{ old('description', $package->description) }}</textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -146,11 +147,11 @@
 
                         <!-- Tombol Aksi -->
                         <div class="form-group text-right mt-4">
-                            <button type="reset" class="btn btn-outline-secondary mr-2">
-                                <i class="fas fa-undo mr-1"></i> Reset
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save mr-1"></i> Simpan Paket
+                            <a href="{{ route('packages.index') }}" class="btn btn-secondary mr-2">
+                                <i class="fas fa-times mr-1"></i> Batal
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save mr-1"></i> Update Paket
                             </button>
                         </div>
                     </form>
@@ -177,17 +178,16 @@
     }
     
     .form-control:focus, .custom-select:focus {
-        border-color: #4d90fe;
-        box-shadow: 0 0 0 0.2rem rgba(77, 144, 254, 0.25);
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
     }
     
     .input-group-text {
         background-color: #f8f9fa;
     }
     
-    .btn-outline-secondary:hover {
-        background-color: #6c757d;
-        color: white;
+    .btn-warning {
+        color: #212529;
     }
 </style>
 @endpush

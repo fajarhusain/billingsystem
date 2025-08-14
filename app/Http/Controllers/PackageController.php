@@ -1,5 +1,6 @@
 <?php
 
+// app/Http/Controllers/PackageController.php
 namespace App\Http\Controllers;
 
 use App\Models\Package;
@@ -20,26 +21,24 @@ class PackageController extends Controller
 
     public function store(Request $request)
     {
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'type' => 'required|in:home,business,corporate',
-        'speed' => 'required|integer|min:1',
-        'price' => 'required|numeric|min:0',
-        'status' => 'required|in:active,inactive',
-        'description' => 'nullable|string'
-    ]);
-    
-    Package::create($validated);
-    
-    return redirect()->route('packages.index')
-                     ->with('success', 'Paket berhasil ditambahkan!');
-}
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:home,business,corporate',
+            'speed_mbps' => 'required|integer|min:1',
+            'quota' => 'required|string|max:100',
+            'price' => 'required|numeric|min:0',
+            'status' => 'required|in:active,inactive',
+            'description' => 'nullable|string'
+        ]);
 
-        
+        Package::create($validated);
+
+        return redirect()->route('packages.index')
+            ->with('success', 'Paket berhasil ditambahkan!');
+    }
 
     public function show(Package $package)
     {
-        $package->load('customers');
         return view('packages.show', compact('package'));
     }
 
@@ -52,11 +51,12 @@ class PackageController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'type' => 'required|in:home,business,corporate',
             'speed_mbps' => 'required|integer|min:1',
             'quota' => 'required|string|max:100',
             'price' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean'
+            'status' => 'required|in:active,inactive',
+            'description' => 'nullable|string'
         ]);
 
         $package->update($validated);
@@ -67,7 +67,7 @@ class PackageController extends Controller
 
     public function destroy(Package $package)
     {
-        if ($package->customers()->count() > 0) {
+        if ($package->customers()->exists()) {
             return redirect()->route('packages.index')
                 ->with('error', 'Tidak dapat menghapus paket yang masih digunakan pelanggan!');
         }
@@ -77,7 +77,4 @@ class PackageController extends Controller
         return redirect()->route('packages.index')
             ->with('success', 'Paket berhasil dihapus!');
     }
-
-
-
 }
