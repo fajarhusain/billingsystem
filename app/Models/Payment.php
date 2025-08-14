@@ -11,6 +11,7 @@ class Payment extends Model
 
     protected $fillable = [
         'invoice_id',
+        'customer_id', // pastikan ada
         'amount',
         'payment_date',
         'payment_method',

@@ -48,4 +48,8 @@ class Customer extends Model
 
         return '<span class="badge badge-'.$statuses[$this->status].'">'.ucfirst($this->status).'</span>';
     }
+    public function invoices()
+{
+    return $this->hasMany(Invoice::class);
+}
 }

@@ -113,8 +113,8 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice)
     {
-        $invoice->load('customer', 'customer.package', 'payments');
-        return view('invoices.show', compact('invoice'));
+        $invoice->load('customer', 'customer.package', 'customer.invoices', 'payments');
+    return view('invoices.show', compact('invoice'));
     }
 
     public function markAsPaid(Request $request, Invoice $invoice)
@@ -126,14 +126,17 @@ class InvoiceController extends Controller
         'notes' => 'nullable|string'
     ]);
 
+    // Update status invoice
     $invoice->update([
         'status' => 'paid',
         'payment_date' => $validated['payment_date'],
         'payment_method' => $validated['payment_method']
     ]);
 
+    // Catat pembayaran
     Payment::create([
         'invoice_id' => $invoice->id,
+        'customer_id' => $invoice->customer_id, // penting!
         'amount' => $invoice->amount,
         'payment_date' => $validated['payment_date'],
         'payment_method' => $validated['payment_method'],
@@ -144,6 +147,7 @@ class InvoiceController extends Controller
     return redirect()->route('invoices.show', $invoice)
         ->with('success', 'Pembayaran berhasil dicatat!');
 }
+
 
 
     public function destroy(Invoice $invoice)
@@ -214,6 +218,8 @@ class InvoiceController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    
 
     
 }
