@@ -58,7 +58,6 @@
             '09'=>'SEPTEMBER','10'=>'OKTOBER','11'=>'NOVEMBER','12'=>'DESEMBER'
             ];
 
-            // Pastikan relasi invoices sudah dimuat
             $customerInvoices = $invoice->customer->invoices
             ? $invoice->customer->invoices->filter(function($inv) {
             return str_starts_with($inv->period, '2025-');
@@ -74,13 +73,59 @@
             $bg = ($inv && $inv->status === 'paid') ? 'bg-success' : 'bg-danger';
             @endphp
             <div class="col-3 mb-3">
-                <div class="p-3 {{ $bg }} text-white font-weight-bold rounded">
+                @if($inv && $inv->status !== 'paid')
+                {{-- Bisa diklik untuk bayar --}}
+                <button type="button" class="p-3 text-white font-weight-bold rounded {{ $bg }} btn w-100"
+                    data-bs-toggle="modal" data-bs-target="#paymentModal" data-invoice-id="{{ $inv->id }}"
+                    data-invoice-number="{{ $inv->invoice_number }}" data-customer-name="{{ $inv->customer->name }}"
+                    data-invoice-amount="{{ $inv->amount }}">
+                    {{ $namaBulan }}
+                </button>
+                @elseif(!$inv)
+                {{-- Belum ada invoice, klik muncul alert --}}
+                <button type="button" class="p-3 text-white font-weight-bold rounded {{ $bg }} btn w-100"
+                    onclick="alert('Tagihan untuk bulan {{ $namaBulan }} belum dibuat, hubungi admin untuk dibuatkan tagihan!')">
+                    {{ $namaBulan }}
+                </button>
+                @else
+                {{-- Sudah lunas --}}
+                <div class="p-3 text-white font-weight-bold rounded {{ $bg }}">
                     {{ $namaBulan }}
                 </div>
+                @endif
             </div>
             @endforeach
+
+
         </div>
 
     </div>
 </div>
+
+{{-- Sertakan modal payment --}}
+@include('invoices.payment_modal')
+
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var paymentModal = document.getElementById('paymentModal')
+    paymentModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget
+        var invoiceId = button.getAttribute('data-invoice-id')
+        var invoiceNumber = button.getAttribute('data-invoice-number')
+        var customerName = button.getAttribute('data-customer-name')
+        var amount = button.getAttribute('data-amount')
+
+        // Update modal content
+        paymentModal.querySelector('#modalInvoiceNumber').textContent = invoiceNumber
+        paymentModal.querySelector('#modalCustomerName').textContent = customerName
+        paymentModal.querySelector('#modalInvoiceAmount').textContent = 'Rp ' + amount
+
+        // Set form action untuk patch markAsPaid
+        paymentModal.querySelector('#paymentForm').action = '/invoices/' + invoiceId + '/mark-as-paid'
+    })
+})
+</script>
 @endsection

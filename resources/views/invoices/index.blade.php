@@ -53,6 +53,13 @@
     </div>
 </div>
 
+<div class="d-flex justify-content-end mb-3">
+    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateInvoiceModal">
+        <i class="fas fa-plus me-2"></i>Generate Tagihan Bulanan
+    </button>
+</div>
+
+
 <!-- Invoices Table -->
 <div class="card">
     <div class="card-body">
@@ -123,6 +130,42 @@
         @endif
     </div>
 </div>
+
+<div class="modal fade" id="generateInvoiceModal" tabindex="-1" aria-labelledby="generateInvoiceModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <form action="{{ route('invoices.generateMonthly') }}" method="POST">
+                @csrf
+                <div class="modal-header bg-warning text-white rounded-top">
+                    <h5 class="modal-title fw-bold" id="generateInvoiceModalLabel">
+                        <i class="fas fa-plus me-2"></i>Generate Tagihan Bulanan
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Periode Tagihan</label>
+                        <input type="month" class="form-control" name="period" value="{{ date('Y-m') }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Jatuh Tempo</label>
+                        <input type="date" class="form-control" name="due_date" value="{{ date('Y-m-d') }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Batal
+                    </button>
+                    <button type="submit" class="btn btn-warning shadow-sm">
+                        <i class="fas fa-check-circle me-1"></i>Generate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <!-- Single Payment Modal (Reusable) -->
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">

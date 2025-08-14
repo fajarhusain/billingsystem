@@ -24,3 +24,4 @@ Route::get('/invoices/export', [InvoiceController::class, 'export'])
 
     Route::patch('/invoices/{invoice}/mark-as-paid', [InvoiceController::class, 'markAsPaid'])
     ->name('invoices.mark-as-paid');
+Route::post('/invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])->name('invoices.generateMonthly');
