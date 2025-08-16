@@ -4,34 +4,56 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
-    <small class="text-muted">{{ now()->format('d F Y') }}</small>
+    <h1 class="fw-bold text-success"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+    <small class="text-muted">{{ now()->translatedFormat('d F Y') }}</small>
 </div>
 
 <!-- Stats Cards -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="stat-card">
-            <div class="stat-number">{{ $stats['total_customers'] }}</div>
-            <div>Total Pelanggan</div>
+        <div class="card shadow-sm border-0 bg-success text-white rounded-3">
+            <div class="card-body d-flex align-items-center">
+                <i class="fas fa-users fa-2x me-3"></i>
+                <div>
+                    <h4 class="mb-0">{{ $stats['total_customers'] }}</h4>
+                    <small>Total Pelanggan</small>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="stat-card">
-            <div class="stat-number">{{ $stats['active_customers'] }}</div>
-            <div>Pelanggan Aktif</div>
+        <div class="card shadow-sm border-0 bg-info-subtle rounded-3 text-dark">
+
+            <div class="card-body d-flex align-items-center">
+                <i class="fas fa-user-check fa-2x me-3 text-success"></i>
+                <div>
+                    <h4 class="mb-0 fw-bold">{{ $stats['active_customers'] }}</h4>
+                    <small class="text-muted">Pelanggan Aktif</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 bg-primary text-white rounded-3">
+            <div class="card-body d-flex align-items-center">
+                <i class="fas fa-wallet fa-2x me-3"></i>
+                <div>
+                    <h4 class="mb-0">Rp {{ number_format($stats['monthly_revenue'], 0, ',', '.') }}</h4>
+                    <small>Pendapatan Bulan Ini</small>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="stat-card">
-            <div class="stat-number">Rp {{ number_format($stats['monthly_revenue'], 0, ',', '.') }}</div>
-            <div>Pendapatan Bulan Ini</div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="stat-card">
-            <div class="stat-number">{{ $stats['unpaid_invoices'] }}</div>
-            <div>Tagihan Belum Bayar</div>
+        <div class="card shadow-sm border-0 bg-danger text-white rounded-3">
+            <div class="card-body d-flex align-items-center">
+                <i class="fas fa-exclamation-circle fa-2x me-3"></i>
+                <div>
+                    <h4 class="mb-0">{{ $stats['unpaid_invoices'] }}</h4>
+                    <small>Tagihan Belum Bayar</small>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -39,16 +61,16 @@
 <div class="row">
     <!-- Recent Invoices -->
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Tagihan Terbaru</h5>
-                <a href="{{ route('invoices.index') }}" class="btn btn-sm btn-primary">Lihat Semua</a>
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-file-invoice me-2 text-success"></i>Tagihan Terbaru</h5>
+                <a href="{{ route('invoices.index') }}" class="btn btn-sm btn-outline-success">Lihat Semua</a>
             </div>
             <div class="card-body">
                 @if($recentInvoices->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
+                    <table class="table table-striped align-middle">
+                        <thead class="table-success">
                             <tr>
                                 <th>Invoice</th>
                                 <th>Pelanggan</th>
@@ -61,7 +83,7 @@
                             @foreach($recentInvoices as $invoice)
                             <tr>
                                 <td>
-                                    <a href="{{ route('invoices.show', $invoice) }}" class="text-decoration-none">
+                                    <a href="{{ route('invoices.show', $invoice) }}" class="fw-semibold text-success">
                                         {{ $invoice->invoice_number }}
                                     </a>
                                 </td>
@@ -76,7 +98,7 @@
                 </div>
                 @else
                 <div class="text-center py-4 text-muted">
-                    <i class="fas fa-file-invoice fa-3x mb-3"></i>
+                    <i class="fas fa-file-invoice fa-3x mb-3 text-success"></i>
                     <p>Belum ada tagihan</p>
                 </div>
                 @endif
@@ -86,32 +108,37 @@
 
     <!-- Quick Actions -->
     <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Aksi Cepat</h5>
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Aksi Cepat</h5>
             </div>
             <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('customers.create') }}" class="btn btn-primary">
-                        <i class="fas fa-user-plus me-2"></i>Tambah Pelanggan
-                    </a>
-                    <a href="{{ route('packages.create') }}" class="btn btn-secondary">
-                        <i class="fas fa-box me-2"></i>Tambah Paket
-                    </a>
-                    <a href="{{ route('invoices.create') }}" class="btn btn-success">
-                        <i class="fas fa-file-invoice-dollar me-2"></i>Buat Tagihan
-                    </a>
-
-                    <!-- Generate Monthly Invoices -->
-                    <button type="button" class="btn btn-warning" data-bs-toggle="modal"
-                        data-bs-target="#generateModal">
-                        <i class="fas fa-calendar-alt me-2"></i>Generate Tagihan Bulanan
-                    </button>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a href="{{ route('customers.create') }}" class="btn btn-success w-100 py-3">
+                            <i class="fas fa-user-plus fa-lg d-block mb-2"></i>Tambah<br>Pelanggan
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ route('packages.create') }}" class="btn btn-info w-100 py-3">
+                            <i class="fas fa-box fa-lg d-block mb-2"></i>Tambah<br>Paket
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ route('invoices.create') }}" class="btn btn-primary w-100 py-3">
+                            <i class="fas fa-file-invoice-dollar fa-lg d-block mb-2"></i>Buat<br>Tagihan
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-warning w-100 py-3" data-bs-toggle="modal"
+                            data-bs-target="#generateModal">
+                            <i class="fas fa-calendar-alt fa-lg d-block mb-2"></i>Generate<br>Bulanan
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Alert untuk overdue -->
                 @if($stats['overdue_invoices'] > 0)
-                <div class="alert alert-danger mt-3" role="alert">
+                <div class="alert alert-danger mt-3 mb-0" role="alert">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     <strong>{{ $stats['overdue_invoices'] }}</strong> tagihan sudah jatuh tempo!
                     <a href="{{ route('invoices.index', ['status' => 'overdue']) }}" class="alert-link">Lihat detail</a>
@@ -122,35 +149,6 @@
     </div>
 </div>
 
-<!-- Generate Monthly Invoices Modal -->
-<div class="modal fade" id="generateModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="{{ route('invoices.generateMonthly') }}" method="POST">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Generate Tagihan Bulanan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="period" class="form-label">Periode</label>
-                        <input type="month" class="form-control" id="period" name="period"
-                            value="{{ now()->format('Y-m') }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="due_date" class="form-label">Jatuh Tempo</label>
-                        <input type="date" class="form-control" id="due_date" name="due_date"
-                            value="{{ now()->format('Y-m-d') }}" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Generate</button>
-                </div>
-            </form>
 
-        </div>
-    </div>
-</div>
+
 @endsection

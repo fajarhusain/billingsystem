@@ -90,4 +90,27 @@ class CustomerController extends Controller
         return redirect()->route('customers.index')
             ->with('success', 'Pelanggan berhasil dihapus!');
     }
+    
+
+    public function scanPage()
+    {
+        return view('customers.scan');
+    }
+
+    public function findByCode($code)
+    {
+        $customer = Customer::with('package')->where('unique_code', $code)->first();
+
+        if (!$customer) {
+            return response()->json(['error' => 'Pelanggan tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'id' => $customer->id,
+            'name' => $customer->name,
+            'package' => $customer->package->name ?? '-',
+            'address' => $customer->address,
+            'phone' => $customer->phone,
+        ]);
+    }
 }

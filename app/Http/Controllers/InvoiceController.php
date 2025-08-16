@@ -7,6 +7,9 @@ use App\Models\Customer;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\InvoicesExport;
+
 
 class InvoiceController extends Controller
 {
@@ -164,60 +167,88 @@ class InvoiceController extends Controller
     }
 
     public function export(Request $request)
-    {
-        $query = Invoice::with('customer', 'customer.package');
+{
+    // Filter data sesuai request
+    $query = Invoice::with('customer')
+        ->where('status', 'paid');
 
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->has('period') && !empty($request->period)) {
-            $query->where('period', $request->period);
-        }
-
-        $invoices = $query->get();
-
-        $filename = 'tagihan_' . date('Y-m-d_H-i-s') . '.csv';
-        
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-        ];
-
-        $callback = function() use ($invoices) {
-            $file = fopen('php://output', 'w');
-            
-            // CSV Header
-            fputcsv($file, [
-                'No Invoice',
-                'Pelanggan',
-                'Paket',
-                'Periode',
-                'Jumlah',
-                'Jatuh Tempo',
-                'Status',
-                'Tanggal Bayar'
-            ]);
-
-            // CSV Data
-            foreach ($invoices as $invoice) {
-                fputcsv($file, [
-                    $invoice->invoice_number,
-                    $invoice->customer->name,
-                    $invoice->customer->package->name,
-                    $invoice->period,
-                    $invoice->amount,
-                    $invoice->due_date->format('d/m/Y'),
-                    ucfirst($invoice->status),
-                    $invoice->payment_date ? $invoice->payment_date->format('d/m/Y') : ''
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+    if ($request->has('month')) {
+        $query->whereMonth('created_at', $request->month);
     }
+    if ($request->has('year')) {
+        $query->whereYear('created_at', $request->year);
+    }
+
+    $invoices = $query->get();
+
+    return Excel::download(new InvoicesExport($invoices), 'tagihan_terbayar.xlsx');
+}
+
+public function scanqr()
+{
+    return view('invoices.scanqr');
+}
+
+
+
+    // public function export(Request $request)
+    // {
+    //     $query = Invoice::with('customer', 'customer.package');
+
+    //     if ($request->has('status') && !empty($request->status)) {
+    //         $query->where('status', $request->status);
+    //     }
+
+    //     if ($request->has('period') && !empty($request->period)) {
+    //         $query->where('period', $request->period);
+    //     }
+
+    //     $invoices = $query->get();
+
+    //     $filename = 'tagihan_' . date('Y-m-d_H-i-s') . '.csv';
+        
+    //     $headers = [
+    //         'Content-Type' => 'text/csv',
+    //         'Content-Disposition' => "attachment; filename=\"$filename\"",
+    //     ];
+
+    //     $callback = function() use ($invoices) {
+    //         $file = fopen('php://output', 'w');
+            
+    //         // CSV Header
+    //         fputcsv($file, [
+    //             'No Invoice',
+    //             'Pelanggan',
+    //             'Paket',
+    //             'Periode',
+    //             'Jumlah',
+    //             'Jatuh Tempo',
+    //             'Status',
+    //             'Tanggal Bayar'
+    //         ]);
+
+    //         // CSV Data
+    //         foreach ($invoices as $invoice) {
+    //             fputcsv($file, [
+    //                 $invoice->invoice_number,
+    //                 $invoice->customer->name,
+    //                 $invoice->customer->package->name,
+    //                 $invoice->period,
+    //                 $invoice->amount,
+    //                 $invoice->due_date->format('d/m/Y'),
+    //                 ucfirst($invoice->status),
+    //                 $invoice->payment_date ? $invoice->payment_date->format('d/m/Y') : ''
+    //             ]);
+    //         }
+
+    //         fclose($file);
+    //     };
+
+    //     return response()->stream($callback, 200, $headers);
+    // }
+
+
+
 
     
 

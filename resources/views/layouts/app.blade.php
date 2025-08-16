@@ -13,18 +13,34 @@
         --secondary-color: #667eea;
     }
 
+    body {
+        overflow-x: hidden;
+    }
+
     .sidebar {
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         min-height: 100vh;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        transition: all 0.3s ease;
     }
 
+    /* --- PERUBAHAN DI SINI --- */
     .sidebar .nav-link {
         color: rgba(255, 255, 255, 0.8);
         transition: all 0.3s ease;
         border-radius: 8px;
-        margin: 2px 0;
+        margin: 5px 0;
+        /* Menambah jarak antar menu */
+        padding: 12px 16px;
+        /* Menambah ruang di dalam item menu */
+        font-size: 1.1rem;
+        /* Memperbesar ukuran font */
+        font-weight: 500;
+        /* Menambahkan bobot font */
     }
+
+    /* --- AKHIR PERUBAHAN --- */
 
     .sidebar .nav-link:hover,
     .sidebar .nav-link.active {
@@ -62,51 +78,58 @@
         padding: 5px 12px;
     }
 
-    .stat-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 15px;
-        padding: 25px;
-        text-align: center;
-    }
-
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
+    /* Mobile Sidebar */
     @media (max-width: 768px) {
         .sidebar {
             position: fixed;
             top: 0;
             left: -250px;
-            /* Hide sidebar off-screen */
             width: 250px;
             height: 100%;
-            transition: left 0.3s ease;
-            z-index: 1000;
+            z-index: 1050;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.2);
         }
 
         .sidebar.active {
             left: 0;
-            /* Show sidebar */
         }
 
         .toggle-sidebar {
+            display: inline-block;
+        }
+
+        /* overlay saat sidebar muncul */
+        #sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            display: none;
+        }
+
+        #sidebar-overlay.active {
             display: block;
-            /* Show toggle button */
+        }
+    }
+
+    @media (min-width: 769px) {
+        .toggle-sidebar {
+            display: none;
         }
     }
     </style>
 </head>
 
 <body>
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 px-0">
-                <div class="sidebar p-3" id="sidebar">
+                <div class="sidebar" id="sidebar">
                     <h4 class="text-white mb-4">
                         <i class="fas fa-wifi"></i> Billing System
                     </h4>
@@ -128,15 +151,24 @@
                             href="{{ route('invoices.index') }}">
                             <i class="fas fa-file-invoice-dollar me-2"></i> Tagihan
                         </a>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('reports.index') }}">
+                                <i class="fas fa-chart-line"></i> <span>Laporan</span>
+                            </a>
+                        </li>
+
                     </nav>
+
+                    <button class="btn btn-light d-md-none mt-3 w-100" onclick="toggleSidebar()">
+                        <i class="fas fa-times me-2"></i> Tutup
+                    </button>
                 </div>
             </div>
 
-            <!-- Main Content -->
             <div class="col-md-9 col-lg-10">
                 <div class="p-4">
-                    <button class="btn btn-primary toggle-sidebar" onclick="toggleSidebar()">
-                        <i class="fas fa-bars"></i>
+                    <button class="btn btn-primary d-md-none mb-3 toggle-sidebar" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i> Menu
                     </button>
 
                     @if(session('success'))
@@ -163,7 +195,9 @@
     <script>
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
         sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
     }
     </script>
     @stack('scripts')

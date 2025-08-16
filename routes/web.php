@@ -5,6 +5,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
+use App\Exports\PaidInvoicesExport;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Controllers\ReportController;
+
+
+
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -26,3 +32,14 @@ Route::get('/invoices/export', [InvoiceController::class, 'export'])
     Route::patch('/invoices/{invoice}/mark-as-paid', [InvoiceController::class, 'markAsPaid'])
     ->name('invoices.mark-as-paid');
 Route::post('/invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])->name('invoices.generateMonthly');
+
+
+// routes/web.php
+Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invoices.export');
+
+Route::get('/customers/scan', [CustomerController::class, 'scanPage'])->name('customers.scan');
+Route::get('/invoices/scanqr', [InvoiceController::class, 'scanqr'])->name('invoices.scanqr');
+
+Route::get('/invoices/scanqr', [InvoiceController::class, 'scanqr'])->name('invoices.scanqr');
+Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');

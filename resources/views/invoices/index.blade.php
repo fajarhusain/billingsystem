@@ -9,11 +9,17 @@
         <a href="{{ route('invoices.export') }}" class="btn btn-success me-2">
             <i class="fas fa-download me-2"></i>Export CSV
         </a>
-        <a href="{{ route('invoices.create') }}" class="btn btn-primary">
+        <a href="{{ route('invoices.create') }}" class="btn btn-primary me-2">
             <i class="fas fa-plus me-2"></i>Buat Tagihan
         </a>
+        <a href="{{ route('invoices.scanqr') }}" class="btn btn-warning">
+            <i class="fas fa-qrcode me-2"></i>Scan QR
+        </a>
     </div>
+
 </div>
+
+h
 
 <!-- Filter & Search -->
 <div class="card mb-4">
@@ -58,6 +64,13 @@
         <i class="fas fa-plus me-2"></i>Generate Tagihan Bulanan
     </button>
 </div>
+
+<a href="{{ route('invoices.export', request()->only('status','period')) }}" class="btn btn-success w-100">
+    <i class="fas fa-file-excel me-1"></i> Export XLSX
+</a>
+
+
+
 
 
 <!-- Invoices Table -->
