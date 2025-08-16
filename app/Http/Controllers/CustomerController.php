@@ -9,11 +9,32 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    public function index()
-    {
-        $customers = Customer::with('package')->latest()->get();
-        return view('customers.index', compact('customers'));
+    public function index(Request $request)
+{
+    $perPage = $request->perPage ?? 10; // default 10
+    $query = Customer::query();
+
+    if ($request->dusun) {
+        $query->where('dusun', $request->dusun);
     }
+
+    if ($request->status) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->search) {
+        $query->where('name', 'like', '%'.$request->search.'%');
+    }
+
+    $customers = $query->with('package')->orderBy('name')->paginate($perPage);
+    
+    // Menjaga filter/search/perPage tetap aktif di pagination
+    $customers->appends($request->all());
+
+    return view('customers.index', compact('customers', 'perPage'));
+}
+
+
 
     public function create()
     {

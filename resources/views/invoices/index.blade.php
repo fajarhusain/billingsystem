@@ -6,9 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-file-invoice-dollar me-2"></i>Tagihan</h1>
     <div>
-        <a href="{{ route('invoices.export') }}" class="btn btn-success me-2">
-            <i class="fas fa-download me-2"></i>Export CSV
-        </a>
+
         <a href="{{ route('invoices.create') }}" class="btn btn-primary me-2">
             <i class="fas fa-plus me-2"></i>Buat Tagihan
         </a>
@@ -63,9 +61,6 @@ h
     </button>
 </div>
 
-<a href="{{ route('invoices.export', request()->only('status','period')) }}" class="btn btn-success w-100">
-    <i class="fas fa-file-excel me-1"></i> Export XLSX
-</a>
 
 
 

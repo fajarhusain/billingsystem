@@ -1,11 +1,12 @@
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 @extends('layouts.app')
 
 @section('title', 'Detail Pelanggan')
 
 @section('content')
 <div class="container-fluid">
-    <div class="card">
+    <div class="card mb-4">
         <div class="card-header bg-info text-white">
             <h3 class="card-title">
                 <i class="fas fa-user mr-2"></i>
@@ -14,7 +15,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
         </div>
 
         <div class="card-body">
-            <div class="row">
+            <div class="row mb-4">
                 <div class="col-md-6">
                     <table class="table table-bordered">
                         <tr>
@@ -35,7 +36,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
                         </tr>
                         <tr>
                             <th>QR Code Tagihan</th>
-                            <td>
+                            <td class="text-center">
                                 {!! QrCode::size(150)->generate(route('invoices.index', ['customer_id' =>
                                 $customer->id])) !!}
                                 <small class="d-block mt-1">Scan untuk melihat tagihan</small>
@@ -61,13 +62,12 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
                             <th>Alamat</th>
                             <td>{{ $customer->address }}</td>
                         </tr>
-
                     </table>
                 </div>
             </div>
 
             @if($customer->notes)
-            <div class="card mt-3">
+            <div class="card mb-4">
                 <div class="card-header bg-light">
                     <h4 class="card-title mb-0">
                         <i class="fas fa-sticky-note mr-2"></i>
@@ -79,6 +79,91 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
                 </div>
             </div>
             @endif
+
+            {{-- History Pembayaran --}}
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-history mr-2"></i>
+                        History Pembayaran
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @php
+                    $months = [
+                    '01'=>'JANUARI','02'=>'FEBRUARI','03'=>'MARET','04'=>'APRIL',
+                    '05'=>'MEI','06'=>'JUNI','07'=>'JULI','08'=>'AGUSTUS',
+                    '09'=>'SEPTEMBER','10'=>'OKTOBER','11'=>'NOVEMBER','12'=>'DESEMBER'
+                    ];
+
+                    $customerInvoices = $customer->invoices
+                    ? $customer->invoices->filter(function($inv) {
+                    return str_starts_with($inv->period, now()->format('Y-')); // tahun sekarang
+                    })->keyBy(function($inv) {
+                    return \Carbon\Carbon::parse($inv->period.'-01')->format('m');
+                    })
+                    : collect();
+                    @endphp
+
+                    <div class="row text-center">
+                        @foreach($months as $num => $namaBulan)
+                        @php
+                        $inv = $customerInvoices[$num] ?? null;
+                        if(!$inv) {
+                        $bg = 'bg-white border';
+                        $textColor = 'text-dark';
+                        } elseif($inv->status === 'paid') {
+                        $bg = 'bg-success';
+                        $textColor = 'text-white';
+                        } else {
+                        $bg = 'bg-danger';
+                        $textColor = 'text-white';
+                        }
+                        @endphp
+                        <div class="col-3 mb-3">
+                            @if($inv && $inv->status !== 'paid')
+                            <button type="button"
+                                class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
+                                data-bs-toggle="modal" data-bs-target="#paymentModal" data-invoice-id="{{ $inv->id }}"
+                                data-invoice-number="{{ $inv->invoice_number }}"
+                                data-customer-name="{{ $inv->customer->name }}"
+                                data-invoice-amount="{{ $inv->amount }}">
+                                {{ $namaBulan }}
+                            </button>
+                            @elseif(!$inv)
+                            <div class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }}">
+                                {{ $namaBulan }}
+                            </div>
+                            @else
+                            <div class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }}">
+                                {{ $namaBulan }}
+                            </div>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Legend Warna --}}
+                    <div class="mt-4">
+                        <h5>Keterangan:</h5>
+                        <table class="table table-bordered w-50">
+                            <tr>
+                                <td class="bg-success text-white text-center font-weight-bold">LUNAS</td>
+                                <td>Dibayar</td>
+                            </tr>
+                            <tr>
+                                <td class="bg-danger text-white text-center font-weight-bold">BELUM</td>
+                                <td>Belum dibayar</td>
+                            </tr>
+                            <tr>
+                                <td class="bg-white text-center font-weight-bold">BELUM ADA</td>
+                                <td>Tagihan belum dibuat</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
 
             <div class="mt-4">
                 <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-warning">
@@ -92,4 +177,30 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
         </div>
     </div>
 </div>
+
+{{-- Sertakan modal payment --}}
+@include('invoices.payment_modal')
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var paymentModal = document.getElementById('paymentModal')
+    paymentModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget
+        var invoiceId = button.getAttribute('data-invoice-id')
+        var invoiceNumber = button.getAttribute('data-invoice-number')
+        var customerName = button.getAttribute('data-customer-name')
+        var amount = button.getAttribute('data-invoice-amount')
+
+        // Update modal content
+        paymentModal.querySelector('#modalInvoiceNumber').textContent = invoiceNumber
+        paymentModal.querySelector('#modalCustomerName').textContent = customerName
+        paymentModal.querySelector('#modalInvoiceAmount').textContent = 'Rp ' + amount
+
+        // Set form action untuk patch markAsPaid
+        paymentModal.querySelector('#paymentForm').action = '/invoices/' + invoiceId + '/mark-as-paid'
+    })
+})
+</script>
 @endsection

@@ -44,11 +44,6 @@
                 <input type="text" class="form-control"
                     value="Rp {{ number_format($invoice->customer->package->price ?? 0,0,',','.') }}" readonly>
             </div>
-            <label class="col-sm-3 col-form-label">QR Code Tagihan</label>
-            <div class="col-sm-3 text-center">
-                {!! QrCode::size(120)->generate(url('/invoices/'.$invoice->customer->unique_code)) !!}
-                <small class="d-block mt-1">Scan untuk melihat tagihan</small>
-            </div>
         </div>
 
         {{-- Tahun --}}
@@ -75,40 +70,34 @@
             @foreach($months as $num => $namaBulan)
             @php
             $inv = $customerInvoices[$num] ?? null;
-            if(!$inv) {
-            $bg = 'bg-white border'; // Tagihan belum dibuat
-            $textColor = 'text-dark';
-            } elseif($inv->status === 'paid') {
-            $bg = 'bg-success'; // Lunas
-            $textColor = 'text-white';
-            } else {
-            $bg = 'bg-danger'; // Belum bayar
-            $textColor = 'text-white';
-            }
+            $bg = ($inv && $inv->status === 'paid') ? 'bg-success' : 'bg-danger';
             @endphp
-
             <div class="col-3 mb-3">
                 @if($inv && $inv->status !== 'paid')
-                <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
+                {{-- Bisa diklik untuk bayar --}}
+                <button type="button" class="p-3 text-white font-weight-bold rounded {{ $bg }} btn w-100"
                     data-bs-toggle="modal" data-bs-target="#paymentModal" data-invoice-id="{{ $inv->id }}"
                     data-invoice-number="{{ $inv->invoice_number }}" data-customer-name="{{ $inv->customer->name }}"
                     data-invoice-amount="{{ $inv->amount }}">
                     {{ $namaBulan }}
                 </button>
                 @elseif(!$inv)
-                <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
-                    onclick="alert('Tagihan untuk bulan {{ $namaBulan }} belum dibuat, hubungi admin!')">
+                {{-- Belum ada invoice, klik muncul alert --}}
+                <button type="button" class="p-3 text-white font-weight-bold rounded {{ $bg }} btn w-100"
+                    onclick="alert('Tagihan untuk bulan {{ $namaBulan }} belum dibuat, hubungi admin untuk dibuatkan tagihan!')">
                     {{ $namaBulan }}
                 </button>
                 @else
-                <div class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }}">
+                {{-- Sudah lunas --}}
+                <div class="p-3 text-white font-weight-bold rounded {{ $bg }}">
                     {{ $namaBulan }}
                 </div>
                 @endif
             </div>
             @endforeach
-        </div>
 
+
+        </div>
         {{-- Legend Warna --}}
         <div class="mt-4">
             <h5>Keterangan:</h5>
@@ -128,6 +117,7 @@
             </table>
         </div>
 
+
     </div>
 </div>
 
@@ -145,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var invoiceId = button.getAttribute('data-invoice-id')
         var invoiceNumber = button.getAttribute('data-invoice-number')
         var customerName = button.getAttribute('data-customer-name')
-        var amount = button.getAttribute('data-invoice-amount')
+        var amount = button.getAttribute('data-amount')
 
         // Update modal content
         paymentModal.querySelector('#modalInvoiceNumber').textContent = invoiceNumber
