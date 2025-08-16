@@ -21,24 +21,43 @@ class CustomerController extends Controller
         return view('customers.create', compact('packages'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:customers',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string',
-            'package_id' => 'required|exists:packages,id',
-            'registration_date' => 'required|date',
-            'status' => 'required|in:active,suspended,terminated',
-            'notes' => 'nullable|string'
-        ]);
+   public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:customers',
+        'phone' => 'required|string|max:20',
+        'address' => 'required|string',
+        'dusun' => 'required|string', // tambahkan validasi dusun
+        'package_id' => 'required|exists:packages,id',
+        'registration_date' => 'required|date',
+        'status' => 'required|in:active,suspended,terminated',
+        'notes' => 'nullable|string'
+    ]);
 
-        Customer::create($validated);
+    // Tentukan kode dusun
+    $dusunCode = match ($request->dusun) {
+        'rumasan' => '1',
+        'rimalang' => '2',
+        'semangeng' => '3',
+        'mangonan' => '4',
+        'pedoyo' => '5',
+        default => '0',
+    };
 
-        return redirect()->route('customers.index')
-            ->with('success', 'Pelanggan berhasil ditambahkan!');
-    }
+    // Hitung jumlah customer per dusun
+    $lastCustomer = Customer::where('dusun', $request->dusun)->count() + 1;
+
+    // Bentuk unique code
+    $validated['unique_code'] = $dusunCode . str_pad($lastCustomer, 3, '0', STR_PAD_LEFT);
+
+    // Simpan
+    $customer = Customer::create($validated);
+
+    return redirect()->route('customers.show', $customer->id)
+        ->with('success', 'Pelanggan berhasil ditambahkan dengan kode ' . $validated['unique_code']);
+}
+
 
   public function show($id)
 {
@@ -66,23 +85,28 @@ class CustomerController extends Controller
     }
 
     public function update(Request $request, Customer $customer)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:customers,email,'.$customer->id,
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string',
-            'package_id' => 'required|exists:packages,id',
-            'registration_date' => 'required|date',
-            'status' => 'required|in:active,suspended,terminated',
-            'notes' => 'nullable|string'
-        ]);
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:customers,email,' . $customer->id,
+        'phone' => 'required|string|max:20',
+        'address' => 'required|string',
+        'dusun' => 'required|string',
+        'package_id' => 'required|exists:packages,id',
+        'registration_date' => 'required|date',
+        'status' => 'required|in:active,suspended,terminated',
+        'notes' => 'nullable|string'
+    ]);
 
-        $customer->update($validated);
+    // Jangan ubah unique_code
+    $validated['unique_code'] = $customer->unique_code;
 
-        return redirect()->route('customers.index')
-            ->with('success', 'Data pelanggan berhasil diperbarui!');
-    }
+    $customer->update($validated);
+
+    return redirect()->route('customers.show', $customer->id)
+        ->with('success', 'Data pelanggan berhasil diperbarui (kode tetap: ' . $customer->unique_code . ')');
+}
+
 
     public function destroy(Customer $customer)
     {
@@ -91,26 +115,4 @@ class CustomerController extends Controller
             ->with('success', 'Pelanggan berhasil dihapus!');
     }
     
-
-    public function scanPage()
-    {
-        return view('customers.scan');
-    }
-
-    public function findByCode($code)
-    {
-        $customer = Customer::with('package')->where('unique_code', $code)->first();
-
-        if (!$customer) {
-            return response()->json(['error' => 'Pelanggan tidak ditemukan'], 404);
-        }
-
-        return response()->json([
-            'id' => $customer->id,
-            'name' => $customer->name,
-            'package' => $customer->package->name ?? '-',
-            'address' => $customer->address,
-            'phone' => $customer->phone,
-        ]);
-    }
 }

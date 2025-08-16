@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon; // Tambahkan ini
+use Carbon\Carbon;
 
 class Customer extends Model
 {
@@ -12,6 +12,8 @@ class Customer extends Model
 
     protected $fillable = [
         'name',
+        'dusun',
+        'unique_code',
         'email',
         'phone',
         'address',
@@ -23,21 +25,34 @@ class Customer extends Model
 
     protected $dates = ['registration_date'];
 
+    // Relasi ke package
     public function package()
     {
         return $this->belongsTo(Package::class);
     }
 
-    // Accessor untuk format tanggal
-    public function getFormattedRegistrationDateAttribute()
+    // Relasi ke invoice
+    public function invoices()
     {
-        if ($this->registration_date) {
-            return Carbon::parse($this->registration_date)->format('d/m/Y');
-        }
-        return null; // atau format lain yang sesuai
+        return $this->hasMany(Invoice::class);
     }
 
-    // Accessor untuk status badge
+    // ✅ Relasi ke payment
+    public function payments()
+{
+    return $this->hasManyThrough(Payment::class, Invoice::class);
+}
+
+
+    // Accessor format tanggal
+    public function getFormattedRegistrationDateAttribute()
+    {
+        return $this->registration_date
+            ? Carbon::parse($this->registration_date)->format('d/m/Y')
+            : null;
+    }
+
+    // Accessor badge status
     public function getStatusBadgeAttribute()
     {
         $statuses = [
@@ -46,10 +61,7 @@ class Customer extends Model
             'terminated' => 'danger'
         ];
 
-        return '<span class="badge badge-'.$statuses[$this->status].'">'.ucfirst($this->status).'</span>';
+        return '<span class="badge badge-' . ($statuses[$this->status] ?? 'secondary') . '">' 
+            . ucfirst($this->status) . '</span>';
     }
-    public function invoices()
-{
-    return $this->hasMany(Invoice::class);
-}
 }

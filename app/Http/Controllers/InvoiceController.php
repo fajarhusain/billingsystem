@@ -145,6 +145,7 @@ class InvoiceController extends Controller
         'payment_method' => $validated['payment_method'],
         'reference_number' => $validated['reference_number'] ?? null,
         'notes' => $validated['notes'] ?? null
+        
     ]);
 
     return redirect()->route('invoices.show', $invoice)

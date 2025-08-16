@@ -139,14 +139,15 @@
                             href="{{ route('dashboard') }}">
                             <i class="fas fa-tachometer-alt me-2"></i> Dashboard
                         </a>
-                        <a class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}"
-                            href="{{ route('customers.index') }}">
-                            <i class="fas fa-users me-2"></i> Pelanggan
-                        </a>
                         <a class="nav-link {{ request()->routeIs('packages.*') ? 'active' : '' }}"
                             href="{{ route('packages.index') }}">
                             <i class="fas fa-box me-2"></i> Paket
                         </a>
+                        <a class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}"
+                            href="{{ route('customers.index') }}">
+                            <i class="fas fa-users me-2"></i> Pelanggan
+                        </a>
+
                         <a class="nav-link {{ request()->routeIs('invoices.*') ? 'active' : '' }}"
                             href="{{ route('invoices.index') }}">
                             <i class="fas fa-file-invoice-dollar me-2"></i> Tagihan

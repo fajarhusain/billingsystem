@@ -1,3 +1,4 @@
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 @extends('layouts.app')
 
 @section('title', 'Detail Pelanggan')
@@ -32,6 +33,14 @@
                             <th>Status</th>
                             <td>{!! $customer->status_badge !!}</td>
                         </tr>
+                        <tr>
+                            <th>QR Code Tagihan</th>
+                            <td>
+                                {!! QrCode::size(150)->generate(route('invoices.index', ['customer_id' =>
+                                $customer->id])) !!}
+                                <small class="d-block mt-1">Scan untuk melihat tagihan</small>
+                            </td>
+                        </tr>
                     </table>
                 </div>
                 <div class="col-md-6">
@@ -52,6 +61,7 @@
                             <th>Alamat</th>
                             <td>{{ $customer->address }}</td>
                         </tr>
+
                     </table>
                 </div>
             </div>
