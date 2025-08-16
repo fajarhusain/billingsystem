@@ -12,9 +12,7 @@
         <a href="{{ route('invoices.create') }}" class="btn btn-primary me-2">
             <i class="fas fa-plus me-2"></i>Buat Tagihan
         </a>
-        <a href="{{ route('invoices.scanqr') }}" class="btn btn-warning">
-            <i class="fas fa-qrcode me-2"></i>Scan QR
-        </a>
+
     </div>
 
 </div>

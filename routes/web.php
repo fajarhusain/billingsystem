@@ -37,9 +37,6 @@ Route::post('/invoices/generate-monthly', [InvoiceController::class, 'generateMo
 // routes/web.php
 Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invoices.export');
 
-Route::get('/customers/scan', [CustomerController::class, 'scanPage'])->name('customers.scan');
-Route::get('/invoices/scanqr', [InvoiceController::class, 'scanqr'])->name('invoices.scanqr');
 
-Route::get('/invoices/scanqr', [InvoiceController::class, 'scanqr'])->name('invoices.scanqr');
 Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');

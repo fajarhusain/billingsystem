@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\InvoicesExport;
 
+
 class ReportController extends Controller
 {
     // app/Http/Controllers/ReportController.php
@@ -35,7 +36,16 @@ public function index(Request $request)
 }
 
     public function export(Request $request)
-    {
-        return Excel::download(new InvoicesExport($request->status, $request->period), 'laporan_tagihan.xlsx');
-    }
+{
+    $period = $request->get('period');
+    $status = $request->get('status');
+
+    $bulanTahun = $period 
+        ? \Carbon\Carbon::createFromFormat('m/Y', $period)->locale('id')->isoFormat('MMMM YYYY')
+        : now()->locale('id')->isoFormat('MMMM YYYY');
+
+    $fileName = "Laporan Tagihan JRC Wifi Bulan $bulanTahun.xlsx";
+
+    return Excel::download(new InvoicesExport($period, $status), $fileName);
+}
 }
