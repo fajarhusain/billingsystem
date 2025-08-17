@@ -12,19 +12,27 @@
                 </div>
 
                 <div class="modal-body bg-light">
+                    {{-- Info Invoice --}}
                     <div class="mb-3">
-                        <p class="mb-1"><strong>Invoice:</strong> <span class="text-primary"
-                                id="modalInvoiceNumber"></span></p>
-                        <p class="mb-1"><strong>Pelanggan:</strong> <span id="modalCustomerName"></span></p>
-                        <p class="mb-3"><strong>Jumlah:</strong> <span class="badge bg-success fs-6"
-                                id="modalInvoiceAmount"></span></p>
+                        <p class="mb-1"><strong>Invoice:</strong>
+                            <span class="text-primary"
+                                id="modalInvoiceNumber">{{ $invoice->invoice_number ?? '' }}</span>
+                        </p>
+                        <p class="mb-1"><strong>Pelanggan:</strong>
+                            <span id="modalCustomerName">{{ $invoice->customer->name ?? '' }}</span>
+                        </p>
+                        <p class="mb-3"><strong>Jumlah:</strong>
+                            <span class="badge bg-success fs-6" id="modalInvoiceAmount">
+                                Rp {{ number_format($invoice->amount ?? 0,0,',','.') }}
+                            </span>
+                        </p>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold"><i class="fas fa-calendar-day me-1"></i> Tanggal
-                            Pembayaran</label>
-                        <input type="date" class="form-control" name="payment_date" value="{{ date('Y-m-d') }}"
-                            required>
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-calendar-day me-1"></i> Tanggal Pembayaran
+                        </label>
+                        <input type="date" class="form-control" name="payment_date" id="modalPaymentDate" readonly>
                     </div>
 
                     <div class="mb-3">
@@ -56,6 +64,7 @@
                     <button type="submit" class="btn btn-success shadow-sm">
                         <i class="fas fa-check-circle me-1"></i> Konfirmasi
                     </button>
+
                 </div>
             </form>
 
@@ -69,9 +78,23 @@
                     // Gunakan route bernama
                     paymentModal.querySelector('#paymentForm').action = "{{ url('invoices') }}/" +
                         invoiceId + "/mark-as-paid";
+
+                    // Dapatkan elemen input tanggal
+                    var paymentDateInput = document.getElementById('modalPaymentDate');
+
+                    // Ambil tanggal sekarang
+                    var today = new Date();
+                    var day = String(today.getDate()).padStart(2, '0');
+                    var month = String(today.getMonth() + 1).padStart(2, '0'); // Januari = 0
+                    var year = today.getFullYear();
+
+                    // Format YYYY-MM-DD
+                    paymentDateInput.value = `${year}-${month}-${day}`;
                 });
             });
             </script>
+
+
         </div>
     </div>
 </div>

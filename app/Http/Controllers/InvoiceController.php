@@ -14,36 +14,74 @@ use App\Exports\InvoicesExport;
 class InvoiceController extends Controller
 {
     public function index(Request $request)
-    {
-        $query = Invoice::with('customer', 'customer.package');
+{
+    $query = Invoice::with('customer.package');
 
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
-                  ->orWhereHas('customer', function($customerQuery) use ($search) {
-                      $customerQuery->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
+// Filter bulan & tahun
+if ($request->filled('month') || $request->filled('year')) {
+    $year = $request->year ?? date('Y');
+    $month = $request->month;
 
-        if ($request->has('status') && !empty($request->status)) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->has('period') && !empty($request->period)) {
-            $query->where('period', $request->period);
-        }
-
-        // Update overdue status
-        Invoice::where('status', 'unpaid')
-            ->where('due_date', '<', Carbon::now())
-            ->update(['status' => 'overdue']);
-
-        $invoices = $query->latest()->paginate(15);
-
-        return view('invoices.index', compact('invoices'));
+    if ($month) {
+        $query->where('period', 'like', "$year-$month%");
+    } else {
+        $query->where('period', 'like', "$year-%");
     }
+}
+
+// Filter dusun
+if ($request->filled('dusun') && $request->dusun !== 'all') {
+    $query->whereHas('customer', function($q) use ($request) {
+        $q->where('dusun_id', $request->dusun);
+    });
+}
+
+// Filter status
+if ($request->filled('status') && $request->status !== '') {
+    if ($request->status === 'overdue') {
+        $query->where('status', 'unpaid')
+              ->whereDate('due_date', '<', now());
+    } else {
+        $query->where('status', $request->status);
+    }
+}
+
+$invoices = $query->orderBy('period', 'desc')->paginate(10);
+
+
+    // Data Dusun untuk select
+    // $dusuns = ['all' => 'Semua Dusun', 'rumasan'=> 'Rumasan', 'rimalang'=> 'Rimalang', 'semangeng'=> 'Semangeng', 'mangonan'=> 'Mangonan', 'pedoyo'=> 'Pedoyo'];
+    
+    // Data Dusun untuk select
+$dusuns = ['all' => 'Semua Dusun',
+    'rumasan'=> 'Rumasan',
+    'rimalang'=> 'Rimalang',
+    'semangeng'=> 'Semangeng',
+    'mangonan'=> 'Mangonan',
+    'pedoyo'=> 'Pedoyo',
+];
+
+
+
+// Filter dusun
+if ($request->filled('dusun') && $request->dusun !== 'all') {
+    $query->whereHas('customer', function($q) use ($request) {
+        $q->where('dusun_id', $request->dusun); // gunakan dusun_id
+    });
+    // Filter dusun
+if ($request->filled('dusun') && $request->dusun !== 'all') {
+    $query->whereHas('customer', function($q) use ($request) {
+        $q->where('dusun_id', $request->dusun); // gunakan dusun_id
+    });
+}
+}
+    
+    return view('invoices.index', compact('invoices', 'dusuns'));
+}
+
+
+
+
 
     public function create()
     {
@@ -120,6 +158,9 @@ class InvoiceController extends Controller
     return view('invoices.show', compact('invoice'));
     }
 
+  
+
+
     public function markAsPaid(Request $request, Invoice $invoice)
 {
     $validated = $request->validate([
@@ -173,12 +214,15 @@ class InvoiceController extends Controller
     $query = Invoice::with('customer')
         ->where('status', 'paid');
 
-    if ($request->has('month')) {
-        $query->whereMonth('created_at', $request->month);
-    }
-    if ($request->has('year')) {
-        $query->whereYear('created_at', $request->year);
-    }
+if ($request->filled('month')) {
+    $month = $request->month;
+    // ambil juga tahun, default tahun sekarang
+    $year = $request->year ?? date('Y');
+    
+    // jika period bertipe date
+    $query->whereYear('period', $year)
+          ->whereMonth('period', $month);
+}
 
     $invoices = $query->get();
 
@@ -189,6 +233,28 @@ public function scanqr()
 {
     return view('invoices.scanqr');
 }
+
+public function print($id)
+{
+    $invoice = Invoice::with('customer.package')->findOrFail($id);
+
+    return view('invoices.print', compact('invoice'));
+}
+public function detailTagihanCustomer($customerId)
+{
+    $customer = Customer::with('invoices.payments', 'package')->findOrFail($customerId);
+    return view('invoices.detailtagihancustomer', compact('customer'));
+}
+
+public function showCustomer($customerId)
+{
+    $customer = Customer::with('invoices.payments', 'package')->findOrFail($customerId);
+    return view('invoices.show', compact('customer'));
+}
+
+
+
+
 
 
 

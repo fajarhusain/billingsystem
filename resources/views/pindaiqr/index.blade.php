@@ -16,7 +16,7 @@
                     </p>
 
                     <!-- Scanner Box -->
-                    <div id="reader" 
+                    <div id="reader"
                         style="width:100%; max-width:400px; margin:auto; border:2px dashed #198754; border-radius:12px; padding:10px;">
                     </div>
 
@@ -33,25 +33,28 @@
 @push('scripts')
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
-    function onScanSuccess(decodedText, decodedResult) {
-        console.log(`Scan result: ${decodedText}`);
-        document.getElementById("scan-status").innerHTML =
-            `<span class="text-success"><i class="fas fa-check-circle me-1"></i> QR Code terdeteksi!</span>`;
-        
-        // redirect ke halaman detail customer sesuai ID hasil scan
-        setTimeout(() => {
-            window.location.href = "/customers/" + decodedText;
-        }, 1000);
-    }
+function onScanSuccess(decodedText, decodedResult) {
+    console.log(`Scan result: ${decodedText}`);
+    document.getElementById("scan-status").innerHTML =
+        `<span class="text-success"><i class="fas fa-check-circle me-1"></i> QR Code terdeteksi!</span>`;
 
-    function onScanFailure(error) {
-        // Bisa ditambahkan alert jika perlu
-    }
+    // redirect ke halaman detail customer sesuai ID hasil scan
+    setTimeout(() => {
+        window.location.href = "/customers/" + decodedText;
+    }, 1000);
+}
 
-    let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-        fps: 10,
-        qrbox: { width: 250, height: 250 }
-    });
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+function onScanFailure(error) {
+    // Bisa ditambahkan alert jika perlu
+}
+
+let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+    fps: 10,
+    qrbox: {
+        width: 250,
+        height: 250
+    }
+});
+html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 </script>
 @endpush

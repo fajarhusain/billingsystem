@@ -8,6 +8,8 @@
 
 <hr class="my-4">
 
+
+
 <div class="card shadow-sm">
     <div class="card-header text-center">
         <h4 class="mb-0">TAGIHAN INTERNET</h4>
@@ -44,11 +46,7 @@
                 <input type="text" class="form-control"
                     value="Rp {{ number_format($invoice->customer->package->price ?? 0,0,',','.') }}" readonly>
             </div>
-            <label class="col-sm-3 col-form-label">QR Code Tagihan</label>
-            <div class="col-sm-3 text-center">
-                {!! QrCode::size(120)->generate(url('/invoices/'.$invoice->customer->unique_code)) !!}
-                <small class="d-block mt-1">Scan untuk melihat tagihan</small>
-            </div>
+
         </div>
 
         {{-- Tahun --}}
@@ -87,27 +85,30 @@
             }
             @endphp
 
-            <div class="col-3 mb-3">
-                @if($inv && $inv->status !== 'paid')
+            <div class="col-6 col-sm-4 col-md-3 mb-3">
+                @if($inv && $inv->status === 'paid')
+                <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
+                    onclick="confirmPrint('{{ $inv->id }}')">
+                    {{ $namaBulan }}
+                </button>
+                @elseif($inv && $inv->status !== 'paid')
                 <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
                     data-bs-toggle="modal" data-bs-target="#paymentModal" data-invoice-id="{{ $inv->id }}"
                     data-invoice-number="{{ $inv->invoice_number }}" data-customer-name="{{ $inv->customer->name }}"
                     data-invoice-amount="{{ $inv->amount }}">
                     {{ $namaBulan }}
                 </button>
-                @elseif(!$inv)
+                @else
                 <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
                     onclick="alert('Tagihan untuk bulan {{ $namaBulan }} belum dibuat, hubungi admin!')">
                     {{ $namaBulan }}
                 </button>
-                @else
-                <div class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }}">
-                    {{ $namaBulan }}
-                </div>
                 @endif
             </div>
             @endforeach
+
         </div>
+
 
         {{-- Legend Warna --}}
         <div class="mt-4">
@@ -130,6 +131,30 @@
 
     </div>
 </div>
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmPrint(invoiceId) {
+    Swal.fire({
+        title: 'Cetak Struk',
+        text: 'Apakah Anda ingin mencetak struk untuk tagihan ini?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Cetak',
+        cancelButtonText: 'Tidak',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/invoices/' + invoiceId + '/print';
+        }
+    });
+}
+</script>
+
 
 {{-- Sertakan modal payment --}}
 @include('invoices.payment_modal')

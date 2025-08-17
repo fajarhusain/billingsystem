@@ -41,6 +41,11 @@ Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invo
 
 Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
-
-
 Route::get('/pindai-qr', [ScanController::class, 'index'])->name('pindaiqr.index');
+Route::get('/invoices/{id}/print', [InvoiceController::class, 'print'])->name('invoices.print');
+
+Route::get('/invoices/detailtagihancustomer/{customer}', [InvoiceController::class, 'detailTagihanCustomer'])
+    ->name('invoices.detailtagihancustomer');
+
+    Route::get('/invoices/show/{customer}', [InvoiceController::class, 'showCustomerInvoices'])
+    ->name('invoices.showCustomer');
