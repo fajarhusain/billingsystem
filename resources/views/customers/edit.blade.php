@@ -36,6 +36,18 @@
                 </div>
 
                 <div class="mb-3">
+    <label class="form-label">Dusun</label>
+    <select name="dusun" class="form-select" required>
+        <option value="rumasan" {{ old('dusun', $customer->dusun) == 'rumasan' ? 'selected' : '' }}>Rumasan</option>
+        <option value="rimalang" {{ old('dusun', $customer->dusun) == 'rimalang' ? 'selected' : '' }}>Rimalang</option>
+        <option value="semangeng" {{ old('dusun', $customer->dusun) == 'semangeng' ? 'selected' : '' }}>Semangeng</option>
+        <option value="mangonan" {{ old('dusun', $customer->dusun) == 'mangonan' ? 'selected' : '' }}>Mangonan</option>
+        <option value="pedoyo" {{ old('dusun', $customer->dusun) == 'pedoyo' ? 'selected' : '' }}>Pedoyo</option>
+    </select>
+</div>
+
+
+                <div class="mb-3">
                     <label class="form-label">Alamat</label>
                     <textarea name="address" class="form-control" rows="3"
                         required>{{ old('address', $customer->address) }}</textarea>

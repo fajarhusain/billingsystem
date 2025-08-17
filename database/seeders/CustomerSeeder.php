@@ -3,55 +3,53 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Models\Customer;
+use App\Models\Package;
+use Faker\Factory as Faker;
 
 class CustomerSeeder extends Seeder
 {
     public function run()
     {
-        // Data dummy untuk customers
-        $customers = [
-            [
-                'name' => 'John Doe',
-                'email' => 'john@example.com',
-                'phone' => '1234567890',
-                'address' => '123 Main St, Anytown, USA',
-                'package_id' => 1, // Pastikan ID ini ada di tabel packages
-                'registration_date' => Carbon::now()->subDays(10), // 10 hari yang lalu
-                'status' => 'active',
-                'notes' => 'First customer',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Jane Smith',
-                'email' => 'jane@example.com',
-                'phone' => '0987654321',
-                'address' => '456 Elm St, Othertown, USA',
-                'package_id' => 2, // Pastikan ID ini ada di tabel packages
-                'registration_date' => Carbon::now()->subDays(5), // 5 hari yang lalu
-                'status' => 'suspended',
-                'notes' => 'Second customer',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Alice Johnson',
-                'email' => 'alice@example.com',
-                'phone' => '5555555555',
-                'address' => '789 Oak St, Sometown, USA',
-                'package_id' => 1, // Pastikan ID ini ada di tabel packages
-                'registration_date' => Carbon::now()->subDays(1), // 1 hari yang lalu
-                'status' => 'terminated',
-                'notes' => 'Third customer',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            // Tambahkan lebih banyak data dummy sesuai kebutuhan
+        $faker = Faker::create('id_ID');
+
+        // daftar dusun + kode
+        $dusunMap = [
+            'rumasan' => '1',
+            'rimalang' => '2',
+            'semangeng' => '3',
+            'mangonan' => '4',
+            'pedoyo' => '5',
         ];
 
-        // Insert data ke tabel customers
-        DB::table('customers')->insert($customers);
+        // pastikan ada paket aktif
+        $packageIds = Package::where('status', 'active')->pluck('id')->toArray();
+        if (empty($packageIds)) {
+            $this->command->error("Tidak ada package aktif, buat dulu di tabel packages.");
+            return;
+        }
+
+        foreach (range(1, 50) as $i) {
+            // pilih dusun random
+            $dusun = $faker->randomElement(array_keys($dusunMap));
+            $dusunCode = $dusunMap[$dusun];
+
+            // hitung jumlah existing
+            $lastCount = Customer::where('dusun', $dusun)->count() + 1;
+            $uniqueCode = $dusunCode . str_pad($lastCount, 3, '0', STR_PAD_LEFT);
+
+            Customer::create([
+                'name' => $faker->name,
+                'email' => $faker->unique()->safeEmail,
+                'phone' => $faker->phoneNumber,
+                'address' => $faker->address,
+                'dusun' => $dusun,
+                'package_id' => $faker->randomElement($packageIds),
+                'registration_date' => $faker->dateTimeBetween('-1 years', 'now'),
+                'status' => $faker->randomElement(['active', 'suspended', 'terminated']),
+                'notes' => $faker->sentence,
+                'unique_code' => $uniqueCode,
+            ]);
+        }
     }
 }
