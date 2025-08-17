@@ -143,6 +143,8 @@
                             href="{{ route('packages.index') }}">
                             <i class="fas fa-box me-2"></i> Paket
                         </a>
+
+
                         <a class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}"
                             href="{{ route('customers.index') }}">
                             <i class="fas fa-users me-2"></i> Pelanggan
@@ -157,6 +159,12 @@
                                 <i class="fas fa-chart-line"></i> <span>Laporan</span>
                             </a>
                         </li>
+                                                <li class="nav-item">
+    <a href="{{ route('pindaiqr.index') }}" class="nav-link">
+        <i class="fas fa-qrcode"></i>
+        <p>Pindai QR</p>
+    </a>
+</li>
 
                     </nav>
 

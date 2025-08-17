@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Package;
 use Illuminate\Http\Request;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 
 class CustomerController extends Controller
 {
@@ -135,5 +137,6 @@ class CustomerController extends Controller
         return redirect()->route('customers.index')
             ->with('success', 'Pelanggan berhasil dihapus!');
     }
+
     
 }

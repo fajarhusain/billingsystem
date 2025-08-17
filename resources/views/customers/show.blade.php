@@ -1,4 +1,4 @@
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 
 @extends('layouts.app')
 
@@ -35,11 +35,10 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
                             <td>{!! $customer->status_badge !!}</td>
                         </tr>
                         <tr>
-                            <th>QR Code Tagihan</th>
+                            <th>QR Code Pelanggan</th>
                             <td class="text-center">
-                                {!! QrCode::size(150)->generate(route('invoices.index', ['customer_id' =>
-                                $customer->id])) !!}
-                                <small class="d-block mt-1">Scan untuk melihat tagihan</small>
+                                <h5>QR Code Pelanggan</h5>
+    {!! QrCode::size(200)->generate($customer->id) !!}
                             </td>
                         </tr>
                     </table>
@@ -62,11 +61,19 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
                             <th>Alamat</th>
                             <td>{{ $customer->address }}</td>
                         </tr>
+                        <tr>
+                            <th><i class="fas fa-sticky-note mr-2"></i> Catatan</th>
+                            <td>{{ $customer->notes }}</td>
+                        </tr>
+
+
+                          
                     </table>
                 </div>
             </div>
 
-            @if($customer->notes)
+
+            <!-- @if($customer->notes)
             <div class="card mb-4">
                 <div class="card-header bg-light">
                     <h4 class="card-title mb-0">
@@ -78,14 +85,14 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
                     {{ $customer->notes }}
                 </div>
             </div>
-            @endif
+            @endif -->
 
             {{-- History Pembayaran --}}
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h4 class="card-title mb-0">
                         <i class="fas fa-history mr-2"></i>
-                        History Pembayaran
+                        History TAGIHAN
                     </h4>
                 </div>
                 <div class="card-body">

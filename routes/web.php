@@ -8,6 +8,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Exports\PaidInvoicesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ScanController;
 
 
 
@@ -40,3 +41,6 @@ Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invo
 
 Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+
+
+Route::get('/pindai-qr', [ScanController::class, 'index'])->name('pindaiqr.index');
