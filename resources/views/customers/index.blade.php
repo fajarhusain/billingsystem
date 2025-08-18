@@ -4,64 +4,73 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h3 class="card-title">
-                <i class="fas fa-users mr-2"></i>
-                Daftar Pelanggan
-            </h3>
-            <div class="card-tools">
-                <a href="{{ route('customers.create') }}" class="btn btn-light btn-sm">
-                    <i class="fas fa-plus mr-1"></i> Tambah Baru
-                </a>
-            </div>
+
+    <!-- Page Heading -->
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center bg-primary">
+            <h6 class="m-0 font-weight-bold text-white">
+                <i class="fas fa-list mr-2"></i> Data Pelanggan
+            </h6>
+            <a href="{{ route('customers.create') }}" class="btn btn-light btn-sm">
+                <i class="fas fa-plus mr-1"></i> Tambah Baru
+            </a>
         </div>
-        
 
         <div class="card-body">
+            {{-- Notifikasi sukses --}}
             @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                {{ session('success') }}
-                <button type="button" class="close" data-dismiss="alert">
-                    <span>&times;</span>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             @endif
 
             {{-- Filter dan Pencarian Nama --}}
-            <div class="mb-3">
-                <form method="GET" action="{{ route('customers.index') }}" class="form-inline">
+            <form method="GET" action="{{ route('customers.index') }}" class="form-inline mb-3">
+                <div class="form-group mr-2">
                     <label class="mr-2">Nama:</label>
-                    <input type="text" name="search" class="form-control mr-2" placeholder="Cari Nama..."
+                    <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari Nama..."
                         value="{{ request('search') }}">
+                </div>
 
+                <div class="form-group mr-2">
                     <label class="mr-2">Dusun:</label>
-                    <select name="dusun" class="form-control mr-2">
+                    <select name="dusun" class="form-control form-control-sm">
                         <option value="">Semua</option>
                         @foreach(['Rumasan','Rimalang','Semangeng','Manganan','Pedoyo'] as $dusun)
-                        <option value="{{ $dusun }}" {{ request('dusun')==$dusun?'selected':'' }}>{{ $dusun }}</option>
+                        <option value="{{ $dusun }}" {{ request('dusun')==$dusun?'selected':'' }}>{{ $dusun }}
+                        </option>
                         @endforeach
                     </select>
+                </div>
 
+                <div class="form-group mr-2">
                     <label class="mr-2">Status:</label>
-                    <select name="status" class="form-control mr-2">
+                    <select name="status" class="form-control form-control-sm">
                         <option value="">Semua</option>
                         <option value="active" {{ request('status')=='active'?'selected':'' }}>Aktif</option>
-                        <option value="inactive" {{ request('status')=='inactive'?'selected':'' }}>Nonaktif</option>
+                        <option value="suspended" {{ request('status')=='suspended'?'selected':'' }}>Ditangguhkan
+                        </option>
+                        <option value="terminated" {{ request('status')=='terminated'?'selected':'' }}>Berhenti
+                        </option>
                     </select>
 
-                    <button type="submit" class="btn btn-primary btn-sm">Terapkan</button>
-                </form>
-            </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter mr-1"></i> Terapkan
+                </button>
+            </form>
 
             {{-- Pilihan Per Halaman --}}
             <div class="mb-2 d-flex justify-content-end">
                 <form method="GET" action="{{ route('customers.index') }}" class="form-inline">
-                    {{-- Pertahankan filter & pencarian --}}
                     <input type="hidden" name="search" value="{{ request('search') }}">
                     <input type="hidden" name="dusun" value="{{ request('dusun') }}">
                     <input type="hidden" name="status" value="{{ request('status') }}">
-
                     <label class="mr-2">Per Halaman:</label>
                     <select name="perPage" class="form-control form-control-sm" onchange="this.form.submit()">
                         @foreach([10,50,100,500] as $size)
@@ -73,7 +82,7 @@
 
             {{-- Tabel Pelanggan --}}
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover">
+                <table class="table table-bordered table-hover" width="100%" cellspacing="0">
                     <thead class="thead-dark">
                         <tr>
                             <th>No</th>
@@ -82,36 +91,32 @@
                             <th>Dusun</th>
                             <th>Kontak</th>
                             <th>Status</th>
-                            <th>Aksi</th>
+                            <th class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($customers as $customer)
-                        <tr style="cursor:pointer"
-                            onclick="window.location='{{ route('customers.show', $customer->id) }}'">
+                        <tr onclick="window.location='{{ route('customers.show', $customer->id) }}'"
+                            style="cursor:pointer">
                             <td>{{ $loop->iteration + ($customers->currentPage()-1)*$customers->perPage() }}</td>
                             <td>{{ $customer->name }}</td>
                             <td>{{ $customer->package->name }} ({{ $customer->package->speed_mbps }} Mbps)</td>
                             <td>{{ $customer->dusun }}</td>
-                            <td>{{ $customer->phone }}<br><small>{{ $customer->email }}</small></td>
                             <td>
-                                <span style="color: black;">
-                                    {!! strip_tags($customer->status_badge) !!}
-                                </span>
+                                {{ $customer->phone }}<br>
+                                <small class="text-muted">{{ $customer->email }}</small>
                             </td>
-
-                            <td>
-                                <a href="{{ route('customers.show', $customer->id) }}" class="btn btn-sm btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-edit"></i>
-                                </a>
+                            <td>{!! $customer->status_badge !!}</td>
+                            <td class="text-center">
+                                <a href="{{ route('customers.show', $customer->id) }}" class="btn btn-info btn-sm"><i
+                                        class="fas fa-eye"></i></a>
+                                <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-warning btn-sm"><i
+                                        class="fas fa-edit"></i></a>
                                 <form action="{{ route('customers.destroy', $customer->id) }}" method="POST"
                                     class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"
+                                    <button type="submit" class="btn btn-danger btn-sm"
                                         onclick="return confirm('Hapus pelanggan ini?')">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -120,7 +125,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center">Belum ada data pelanggan</td>
+                            <td colspan="7" class="text-center text-muted">Belum ada data pelanggan</td>
                         </tr>
                         @endforelse
                     </tbody>

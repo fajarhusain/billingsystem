@@ -10,16 +10,37 @@
         <a href="{{ route('invoices.create') }}" class="btn btn-primary me-2">
             <i class="fas fa-plus me-2"></i>Buat Tagihan
         </a>
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateInvoiceModal">
+            <i class="fas fa-plus me-2"></i>Generate Tagihan Bulanan
+        </button>
+        <!-- Tambahkan tombol Pinadi QR -->
+        <a href="{{ route('pindaiqr.index') }}" class="btn btn-success">
+            <i class="fas fa-qrcode me-2"></i>Pindai QR
+        </a>
 
     </div>
+    <!-- <div class="d-flex justify-content-end mb-3">
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateInvoiceModal">
+            <i class="fas fa-plus me-2"></i>Generate Tagihan Bulanan
+        </button>
+    </div> -->
+
 
 </div>
+
 
 <!-- Filter & Search -->
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" action="{{ route('invoices.index') }}">
-            <div class="row g-2 align-items-end">
+            <div class="row g-3 align-items-end">
+
+                <!-- Pencarian -->
+                <div class="col-md-3">
+                    <label class="form-label d-none d-md-block">Cari</label>
+                    <input type="text" class="form-control" name="search" value="{{ request('search') }}"
+                        placeholder="Cari pelanggan atau invoice ...">
+                </div>
 
                 <!-- Filter Dusun -->
                 <div class="col-md-2">
@@ -68,22 +89,37 @@
                     </select>
                 </div>
 
+                <!-- Filter Status -->
                 <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select class="form-control" name="status">
+                        <option value="">Semua</option>
+                        <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Lunas</option>
+                        <option value="unpaid" {{ request('status') == 'unpaid' ? 'selected' : '' }}>Belum Bayar
+                        </option>
+                        <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Lewat Jatuh Tempo
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Tombol Cari & Reset -->
+                <div class="col-md-3 d-grid gap-2">
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="fas fa-search me-1"></i>Cari
                     </button>
-                </div>
-
-                <div class="col-md-2">
                     <a href="{{ route('invoices.index') }}" class="btn btn-secondary w-100">
                         <i class="fas fa-refresh me-1"></i>Reset
                     </a>
                 </div>
+
             </div>
         </form>
-
     </div>
 </div>
+
+
+
+
 
 
 
@@ -98,6 +134,7 @@
                     <tr>
                         <th>No. Invoice</th>
                         <th>Pelanggan</th>
+                        <th>Dusun</th> {{-- Kolom Dusun --}}
                         <th>Paket</th>
                         <th>Periode</th>
                         <th>Jumlah</th>
@@ -115,6 +152,8 @@
                             </a>
                         </td>
                         <td>{{ $invoice->customer->name }}</td>
+                        <td>{{ $dusuns[$invoice->customer->dusun] ?? '-' }}</td>
+
                         <td>
                             <span class="badge bg-info">{{ $invoice->customer->package->name }}</span>
                         </td>
@@ -124,21 +163,34 @@
                         <td>{!! $invoice->status_badge !!}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-outline-primary">
+                                <!-- Detail Invoice -->
+                                <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-outline-primary"
+                                    title="Lihat Invoice">
                                     <i class="fas fa-eye"></i>
                                 </a>
+
+                                <!-- Detail Tagihan Customer -->
+                                <!-- <a href="{{ route('invoices.detailTagihanCustomer', $invoice->customer->id) }}"
+                                    class="btn btn-outline-info" title="Detail Tagihan Customer">
+                                    <i class="fas fa-user"></i>
+                                </a> -->
+
+                                <!-- Tombol Bayar -->
                                 @if($invoice->status !== 'paid')
                                 <button type="button" class="btn btn-outline-success payment-btn"
                                     data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
-                                    data-bs-target="#paymentModal">
+                                    data-bs-target="#paymentModal" title="Konfirmasi Pembayaran">
                                     <i class="fas fa-credit-card"></i>
                                 </button>
                                 @endif
                             </div>
                         </td>
+
                     </tr>
                     @endforeach
                 </tbody>
+
+
             </table>
         </div>
 
@@ -157,6 +209,7 @@
         </div>
         @endif
     </div>
+
 </div>
 
 <div class="modal fade" id="generateInvoiceModal" tabindex="-1" aria-labelledby="generateInvoiceModalLabel"
