@@ -17,10 +17,6 @@ Route::resource('customers', CustomerController::class);
 
 // Invoices
 Route::resource('invoices', InvoiceController::class);
-Route::post('/invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])
-    ->name('invoices.generateMonthly');
-// Route::post('/invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])
-//     ->name('invoices.generateMonthly');
 
 Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invoices.export');
 Route::patch('/invoices/{invoice}/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.markAsPaid');

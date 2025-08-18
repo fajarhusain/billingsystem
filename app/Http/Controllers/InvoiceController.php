@@ -152,11 +152,19 @@ if ($request->filled('dusun') && $request->dusun !== 'all') {
             ->with('success', "{$generatedCount} tagihan berhasil di-generate untuk periode {$validated['period']}!");
     }
 
-    public function show(Invoice $invoice)
-    {
-        $invoice->load('customer', 'customer.package', 'customer.invoices', 'payments');
+public function show(Invoice $invoice)
+{
+    $invoice->load('customer', 'customer.package', 'payments');
     return view('invoices.show', compact('invoice'));
-    }
+}
+
+
+public function showGenerateForm()
+{
+    return view('invoices.generate'); // pastikan file Blade ini ada
+}
+
+
 
   
 

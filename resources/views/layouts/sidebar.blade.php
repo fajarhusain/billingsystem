@@ -55,12 +55,12 @@
     </li>
 
     <!-- Nav Item - Pindai QR -->
-    <li class="nav-item {{ request()->routeIs('pindaiqr.*') ? 'active' : '' }}">
+    <!-- <li class="nav-item {{ request()->routeIs('pindaiqr.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('pindaiqr.index') }}">
             <i class="fas fa-fw fa-qrcode"></i>
             <span>Pindai QR</span>
         </a>
-    </li>
+    </li> -->
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">
