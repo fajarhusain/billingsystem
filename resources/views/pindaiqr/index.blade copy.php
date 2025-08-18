@@ -12,7 +12,7 @@
                         <i class="fas fa-qrcode me-2"></i> Pindai QR Customer
                     </h3>
                     <p class="text-muted mb-4">
-                        Arahkan kamera Anda ke QR Code pelanggan untuk melihat detail tagihan.
+                        Arahkan kamera Anda ke QR Code pelanggan untuk melihat detail.
                     </p>
 
                     <!-- Scanner Box -->
@@ -38,24 +38,16 @@ function onScanSuccess(decodedText, decodedResult) {
     document.getElementById("scan-status").innerHTML =
         `<span class="text-success"><i class="fas fa-check-circle me-1"></i> QR Code terdeteksi!</span>`;
 
-    // redirect ke halaman detail tagihan customer sesuai hasil scan
+    // redirect ke halaman detail customer sesuai ID hasil scan
     setTimeout(() => {
-        if (decodedText.startsWith("http")) {
-            // Jika QR Code sudah berupa URL lengkap
-            window.location.href = decodedText;
-        } else {
-            // Jika QR Code hanya berisi ID customer
-            window.location.href = "/invoices/detailtagihancustomer/" + decodedText;
-        }
+        window.location.href = "/customers/" + decodedText;
     }, 1000);
 }
 
 function onScanFailure(error) {
-    // Biar silent, tidak usah alert
-    console.warn(`Scan error: ${error}`);
+    // Bisa ditambahkan alert jika perlu
 }
 
-// Render scanner sekali saja
 let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
     fps: 10,
     qrbox: {

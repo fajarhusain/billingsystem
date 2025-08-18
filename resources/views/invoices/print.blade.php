@@ -189,9 +189,14 @@
     </div>
 
     <!-- Tombol Kembali / Home -->
-    <a href="{{ route('invoices.index') }}" class="btn-share" style="background:#007bff; margin-bottom:10px;">
+    <!-- <a href="{{ route('invoices.index') }}" class="btn-share" style="background:#007bff; margin-bottom:10px;">
         <i class="fas fa-arrow-left me-1"></i> Kembali ke Tagihan
+    </a> -->
+    <!-- Tombol Kembali ke Halaman Sebelumnya -->
+    <a href="{{ url()->previous() }}" class="btn-share" style="background:#6c757d; margin-bottom:10px;">
+        ⬅ Kembali
     </a>
+
 
     <!-- Tombol Bagikan / Unduh Invoice -->
     <a class="btn-share" id="shareInvoice">Bagikan / Unduh Invoice</a>

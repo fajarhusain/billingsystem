@@ -240,17 +240,25 @@ public function print($id)
 
     return view('invoices.print', compact('invoice'));
 }
-public function detailTagihanCustomer($customerId)
+
+public function detailTagihanCustomer($id)
 {
-    $customer = Customer::with('invoices.payments', 'package')->findOrFail($customerId);
-    return view('invoices.detailtagihancustomer', compact('customer'));
+    $invoice = Invoice::with('customer')->where('customer_id', $id)->first();
+
+    if (!$invoice) {
+        abort(404, 'Tagihan tidak ditemukan');
+    }
+
+    return view('invoices.detailtagihancustomer', compact('invoice'));
 }
 
-public function showCustomer($customerId)
+// app/Http/Controllers/InvoiceController.php
+public function pindaiqr()
 {
-    $customer = Customer::with('invoices.payments', 'package')->findOrFail($customerId);
-    return view('invoices.show', compact('customer'));
+    return view('invoices.pindaiqr');
 }
+
+
 
 
 

@@ -135,6 +135,16 @@
                             <i class="fas fa-calendar-alt fa-lg d-block mb-2"></i>Generate<br>Bulanan
                         </button>
                     </div>
+                    <div class="col-12 mt-3">
+                        <a href="{{ route('pindaiqr.index') }}"
+                            class="btn btn-success w-100 py-4 fs-4 fw-bold shadow-lg text-uppercase">
+                            <i class="fas fa-qrcode fa-2x d-block mb-2"></i>
+                            Pindai QR
+                        </a>
+                    </div>
+
+
+
                 </div>
 
                 @if($stats['overdue_invoices'] > 0)

@@ -15,7 +15,7 @@
         </button>
         <!-- Tambahkan tombol Pinadi QR -->
         <a href="{{ route('pindaiqr.index') }}" class="btn btn-success">
-            <i class="fas fa-qrcode me-2"></i>Pinadi QR
+            <i class="fas fa-qrcode me-2"></i>Pindai QR
         </a>
 
     </div>
@@ -163,18 +163,29 @@
                         <td>{!! $invoice->status_badge !!}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-outline-primary">
+                                <!-- Detail Invoice -->
+                                <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-outline-primary"
+                                    title="Lihat Invoice">
                                     <i class="fas fa-eye"></i>
                                 </a>
+
+                                <!-- Detail Tagihan Customer -->
+                                <!-- <a href="{{ route('invoices.detailTagihanCustomer', $invoice->customer->id) }}"
+                                    class="btn btn-outline-info" title="Detail Tagihan Customer">
+                                    <i class="fas fa-user"></i>
+                                </a> -->
+
+                                <!-- Tombol Bayar -->
                                 @if($invoice->status !== 'paid')
                                 <button type="button" class="btn btn-outline-success payment-btn"
                                     data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
-                                    data-bs-target="#paymentModal">
+                                    data-bs-target="#paymentModal" title="Konfirmasi Pembayaran">
                                     <i class="fas fa-credit-card"></i>
                                 </button>
                                 @endif
                             </div>
                         </td>
+
                     </tr>
                     @endforeach
                 </tbody>

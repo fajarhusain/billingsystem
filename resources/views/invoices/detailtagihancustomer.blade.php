@@ -1,200 +1,175 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Pelanggan')
+@section('title', 'Detail Tagihan - ' )
 
 @section('content')
-<div class="container-fluid">
-    <div class="card shadow-sm mb-4">
-        <div class="card-header text-center bg-info text-white">
-            <h4 class="mb-0">DETAIL PELANGGAN</h4>
-            <small>{{ $customer->name }}</small>
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header text-center">
+            <h4 class="mb-0">TAGIHAN INTERNET</h4>
+            <small>JRC MEDIA ID</small>
         </div>
         <div class="card-body">
-            <div class="row mb-4">
-                <!-- Info Pelanggan -->
-                <div class="col-md-6">
-                    <table class="table table-bordered">
-                        <tr>
-                            <th width="30%">Nama</th>
-                            <td>{{ $customer->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Email</th>
-                            <td>{{ $customer->email }}</td>
-                        </tr>
-                        <tr>
-                            <th>Telepon</th>
-                            <td>{{ $customer->phone }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td>{!! $customer->status_badge !!}</td>
-                        </tr>
-                        <tr>
-                            <th>QR Code</th>
-                            <td class="text-center">
-                                {!! QrCode::size(150)->generate(route('invoices.detailtagihancustomer', ['customer' =>
-                                $customer->id])) !!}
-                            </td>
-                        </tr>
 
-
-                    </table>
+            {{-- Informasi Pelanggan --}}
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label">Nama Pelanggan</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" value="{{ $invoice->customer->name }}" readonly>
                 </div>
-                <!-- Info Paket -->
-                <div class="col-md-6">
-                    <table class="table table-bordered">
-                        <tr>
-                            <th width="30%">Paket</th>
-                            <td>{{ $customer->package->name }}<br>
-                                <small>{{ $customer->package->speed_mbps }} Mbps -
-                                    {{ $customer->package->formatted_price }}</small>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Daftar</th>
-                            <td>{{ $customer->formatted_registration_date }}</td>
-                        </tr>
-                        <tr>
-                            <th>Alamat</th>
-                            <td>{{ $customer->address }}</td>
-                        </tr>
-                        <tr>
-                            <th>Catatan</th>
-                            <td>{{ $customer->notes }}</td>
-                        </tr>
-                    </table>
+                <label class="col-sm-3 col-form-label">ID Pelanggan</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" value="{{ $invoice->customer->id }}" readonly>
                 </div>
             </div>
 
-            <div class="card mt-4">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4 class="mb-0">HISTORY TAGIHAN TAHUN {{ now()->format('Y') }}</h4>
+
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label">Alamat</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" value="{{ $invoice->customer->address ?? '-' }}" readonly>
                 </div>
-                <div class="card-body">
-                    @php
-                    $months = [
-                    '01'=>'JANUARI','02'=>'FEBRUARI','03'=>'MARET','04'=>'APRIL',
-                    '05'=>'MEI','06'=>'JUNI','07'=>'JULI','08'=>'AGUSTUS',
-                    '09'=>'SEPTEMBER','10'=>'OKTOBER','11'=>'NOVEMBER','12'=>'DESEMBER'
-                    ];
-
-                    // Ambil invoice untuk tahun ini
-                    $yearInvoices = $customer->invoices->filter(fn($inv) => str_starts_with($inv->period,
-                    now()->format('Y-')))
-                    ->keyBy(fn($inv) => \Carbon\Carbon::parse($inv->period.'-01')->format('m'));
-
-                    // Ambil log pembayaran terakhir per bulan
-                    $history = collect();
-                    foreach($yearInvoices as $month => $inv) {
-                    $lastPayment = $inv->payments->sortByDesc('created_at')->first();
-                    $history[$month] = $lastPayment ?? $inv;
-                    }
-                    @endphp
-
-                    <div class="row text-center">
-                        @foreach($months as $num => $namaBulan)
-                        @php
-                        $entry = $history[$num] ?? null;
-                        if(!$entry) { $bg='bg-white border'; $textColor='text-dark'; $btnType='alert'; }
-                        elseif(isset($entry->status) && $entry->status==='paid') { $bg='bg-success';
-                        $textColor='text-white'; $btnType='print'; }
-                        elseif(isset($entry->amount)) { $bg='bg-danger'; $textColor='text-white'; $btnType='modal'; }
-                        @endphp
-
-                        <div class="col-6 col-sm-4 col-md-3 mb-3">
-                            @if($btnType==='print')
-                            <button type="button"
-                                class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
-                                onclick="confirmPrint('{{ $entry->id }}')">
-                                {{ $namaBulan }}
-                            </button>
-                            @elseif($btnType==='modal')
-                            <button type="button"
-                                class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
-                                data-bs-toggle="modal" data-bs-target="#paymentModal" data-invoice-id="{{ $entry->id }}"
-                                data-invoice-number="{{ $entry->invoice_number ?? '' }}"
-                                data-customer-name="{{ $customer->name }}"
-                                data-invoice-amount="{{ $entry->amount ?? 0 }}">
-                                {{ $namaBulan }}
-                            </button>
-                            @else
-                            <button type="button"
-                                class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
-                                onclick="alert('Tagihan untuk bulan {{ $namaBulan }} belum ada!')">
-                                {{ $namaBulan }}
-                            </button>
-                            @endif
-                        </div>
-                        @endforeach
-                    </div>
-
-                    {{-- Legend --}}
-                    <div class="mt-4 text-center">
-                        <h5>Keterangan:</h5>
-                        <table class="table table-bordered w-50 mx-auto">
-                            <tr>
-                                <td class="bg-success text-white text-center font-weight-bold">LUNAS</td>
-                                <td>Dibayar</td>
-                            </tr>
-                            <tr>
-                                <td class="bg-danger text-white text-center font-weight-bold">BELUM</td>
-                                <td>Belum dibayar</td>
-                            </tr>
-                            <tr>
-                                <td class="bg-white text-center font-weight-bold">BELUM ADA</td>
-                                <td>Tagihan belum dibuat</td>
-                            </tr>
-                        </table>
-                    </div>
+                <label class="col-sm-3 col-form-label">Instalasi</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" value="{{ $invoice->customer->installation ?? '-' }}"
+                        readonly>
                 </div>
+            </div>
+
+            <div class="form-group row mb-4">
+                <label class="col-sm-3 col-form-label">Harga Paket</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control"
+                        value="Rp {{ number_format($invoice->customer->package->price ?? 0, 0, ',', '.') }}" readonly>
+                </div>
+            </div>
+
+            {{-- Tahun --}}
+            <h5 class="text-center my-4">TAHUN 2025</h5>
+
+            {{-- Grid Bulan --}}
+            <div class="row text-center">
+                @php
+                $months = [
+                '01'=>'JANUARI','02'=>'FEBRUARI','03'=>'MARET','04'=>'APRIL',
+                '05'=>'MEI','06'=>'JUNI','07'=>'JULI','08'=>'AGUSTUS',
+                '09'=>'SEPTEMBER','10'=>'OKTOBER','11'=>'NOVEMBER','12'=>'DESEMBER'
+                ];
+
+                $customerInvoices = $invoice->customer->invoices
+                ? $invoice->customer->invoices->filter(function($inv) {
+                return str_starts_with($inv->period, '2025-');
+                })->keyBy(function($inv) {
+                return \Carbon\Carbon::parse($inv->period . '-01')->format('m');
+                })
+                : collect();
+                @endphp
+
+                @foreach($months as $num => $namaBulan)
+                @php
+                $inv = $customerInvoices[$num] ?? null;
+                if (!$inv) {
+                $bg = 'bg-white border'; // Tagihan belum dibuat
+                $textColor = 'text-dark';
+                } elseif ($inv->status === 'paid') {
+                $bg = 'bg-success'; // Lunas
+                $textColor = 'text-white';
+                } else {
+                $bg = 'bg-danger'; // Belum bayar
+                $textColor = 'text-white';
+                }
+                @endphp
+
+                <div class="col-6 col-sm-4 col-md-3 mb-3">
+                    @if($inv && $inv->status === 'paid')
+                    <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
+                        onclick="confirmPrint('{{ $inv->id }}')">
+                        {{ $namaBulan }}
+                    </button>
+                    @elseif($inv && $inv->status !== 'paid')
+                    <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
+                        data-bs-toggle="modal" data-bs-target="#paymentModal" data-invoice-id="{{ $inv->id }}"
+                        data-invoice-number="{{ $inv->invoice_number }}" data-customer-name="{{ $inv->customer->name }}"
+                        data-invoice-amount="{{ $inv->amount }}">
+                        {{ $namaBulan }}
+                    </button>
+                    @else
+                    <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
+                        onclick="alert('Tagihan untuk bulan {{ $namaBulan }} belum dibuat, hubungi admin!')">
+                        {{ $namaBulan }}
+                    </button>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+
+            {{-- Legend Warna --}}
+            <div class="mt-4">
+                <h5>Keterangan:</h5>
+                <table class="table table-bordered w-50">
+                    <tr>
+                        <td class="bg-success text-white text-center font-weight-bold">LUNAS</td>
+                        <td>Dibayar</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-danger text-white text-center font-weight-bold">BELUM</td>
+                        <td>Belum dibayar</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-white text-center font-weight-bold">BELUM ADA</td>
+                        <td>Tagihan belum dibuat</td>
+                    </tr>
+                </table>
             </div>
 
         </div>
     </div>
+</div>
 
-    {{-- Modal Payment --}}
-    @include('invoices.payment_modal')
-
-    @endsection
-
-    @section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Modal payment
-        var paymentModal = document.getElementById('paymentModal');
-        paymentModal.addEventListener('show.bs.modal', function(event) {
-            var button = event.relatedTarget;
-            var invoiceId = button.getAttribute('data-invoice-id');
-            var invoiceNumber = button.getAttribute('data-invoice-number');
-            var customerName = button.getAttribute('data-customer-name');
-            var amount = button.getAttribute('data-invoice-amount');
-
-            paymentModal.querySelector('#modalInvoiceId').textContent = invoiceNumber;
-            paymentModal.querySelector('#modalCustomerName').textContent = customerName;
-            paymentModal.querySelector('#modalInvoiceAmount').textContent = 'Rp ' + Number(amount)
-                .toLocaleString('id-ID');
-            paymentModal.querySelector('#paymentForm').action = '/invoices/' + invoiceId +
-                '/mark-as-paid';
-        });
+{{-- SweetAlert & Print Script --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function confirmPrint(invoiceId) {
+    Swal.fire({
+        title: 'Cetak Struk',
+        text: 'Apakah Anda ingin mencetak struk untuk tagihan ini?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Cetak',
+        cancelButtonText: 'Tidak',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/invoices/' + invoiceId + '/print';
+        }
     });
+}
+</script>
 
-    // Cetak struk
-    function confirmPrint(invoiceId) {
-        Swal.fire({
-            title: 'Cetak Struk',
-            text: 'Apakah Anda ingin mencetak struk untuk tagihan ini?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Cetak',
-            cancelButtonText: 'Tidak',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = '/invoices/' + invoiceId + '/print';
-            }
-        });
-    }
-    </script>
-    @endsection
+{{-- Sertakan modal payment --}}
+@include('invoices.payment_modal')
+
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var paymentModal = document.getElementById('paymentModal');
+    paymentModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var invoiceId = button.getAttribute('data-invoice-id');
+        var invoiceNumber = button.getAttribute('data-invoice-number');
+        var customerName = button.getAttribute('data-customer-name');
+        var amount = button.getAttribute('data-invoice-amount');
+
+        // Update modal content
+        paymentModal.querySelector('#modalInvoiceNumber').textContent = invoiceNumber;
+        paymentModal.querySelector('#modalCustomerName').textContent = customerName;
+        paymentModal.querySelector('#modalInvoiceAmount').textContent = 'Rp ' + amount;
+
+        // Set form action untuk patch markAsPaid
+        paymentModal.querySelector('#paymentForm').action = '/invoices/' + invoiceId + '/mark-as-paid';
+    });
+});
+</script>
+@endsection

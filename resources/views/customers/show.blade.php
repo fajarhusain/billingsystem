@@ -32,8 +32,12 @@
                         </tr>
                         <tr>
                             <th>QR Code</th>
-                            <td class="text-center">{!! QrCode::size(150)->generate($customer->id) !!}</td>
+                            <td class="text-center">
+                                {!! QrCode::size(150)->generate($customer->id) !!}
+
+                            </td>
                         </tr>
+
                         </tr>
                     </table>
                 </div>
@@ -64,7 +68,7 @@
                 </div>
             </div>
 
-            {{-- History Tagihan --}}
+            <!-- {{-- History Tagihan --}}
             <div class="card mt-4">
                 <div class="card-header bg-primary text-white text-center">
                     <h4 class="mb-0">HISTORY TAGIHAN TAHUN {{ now()->format('Y') }}</h4>
@@ -147,7 +151,79 @@
                         </table>
                     </div>
                 </div>
+            </div> -->
+
+            {{-- History Tagihan --}}
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">HISTORY TAGIHAN TAHUN {{ now()->format('Y') }}</h4>
+                </div>
+
+                <div class="card-body">
+                    <table class="table table-bordered table-striped">
+                        <thead class="text-dark text-center bg-light">
+
+                            <tr>
+                                <th>Bulan</th>
+                                <th>Periode</th>
+                                <th>Jumlah</th>
+                                <th>Status</th>
+                                <th>Jatuh Tempo</th>
+                                <th>Tanggal Bayar</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                            $months = [
+                            '01'=>'JANUARI','02'=>'FEBRUARI','03'=>'MARET','04'=>'APRIL',
+                            '05'=>'MEI','06'=>'JUNI','07'=>'JULI','08'=>'AGUSTUS',
+                            '09'=>'SEPTEMBER','10'=>'OKTOBER','11'=>'NOVEMBER','12'=>'DESEMBER'
+                            ];
+
+                            $year = now()->format('Y');
+                            $customerInvoices = $customer->invoices
+                            ->filter(fn($inv) => str_starts_with($inv->period, $year.'-'))
+                            ->keyBy(fn($inv) => \Carbon\Carbon::parse($inv->period.'-01')->format('m'));
+                            @endphp
+
+                            @foreach($months as $num => $namaBulan)
+                            @php
+                            $inv = $customerInvoices[$num] ?? null;
+                            @endphp
+                            <tr>
+                                <td class="text-center">{{ $namaBulan }}</td>
+                                <td class="text-center">{{ $inv?->period ?? '-' }}</td>
+                                <td class="text-end">
+                                    {{ $inv ? 'Rp '.number_format($inv->amount,0,',','.') : '-' }}
+                                </td>
+                                <td class="text-center">
+                                    @if(!$inv)
+                                    <span class="badge bg-secondary">BELUM ADA</span>
+                                    @elseif($inv->status === 'paid')
+                                    <span class="badge bg-success">LUNAS</span>
+                                    @else
+                                    <span class="badge bg-danger">BELUM BAYAR</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">{{ $inv?->due_date ?? '-' }}</td>
+                                <td class="text-center">{{ $inv?->paid_at ?? '-' }}</td>
+                                <td class="text-center">
+                                    @if($inv && $inv->status === 'paid')
+                                    <a href="{{ route('invoices.print', $inv->id) }}" target="_blank"
+                                        class="btn btn-sm btn-success">
+                                        Print
+                                    </a>
+                                    @endif
+
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
 
             {{-- Tombol aksi --}}
             <div class="mt-4 text-center">
@@ -165,6 +241,7 @@
 
 {{-- Modal Payment --}}
 @include('invoices.payment_modal')
+
 
 @endsection
 

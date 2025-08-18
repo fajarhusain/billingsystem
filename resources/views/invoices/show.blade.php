@@ -1,14 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-<h1>Invoice #{{ $invoice->id }}</h1>
-<p>Customer: {{ $invoice->customer->name }}</p>
-<p>Paket: {{ $invoice->customer->package->name ?? '-' }}</p>
-<p>Total: Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Invoice #{{ $invoice->id }}</h1>
+
+    <a href="{{ route('pindaiqr.index') }}" class="btn btn-success">
+        <i class="fas fa-qrcode me-2"></i>Pindai QR
+    </a>
+</div>
+
 
 <hr class="my-4">
-
-
 
 <div class="card shadow-sm">
     <div class="card-header text-center">
@@ -46,7 +48,6 @@
                 <input type="text" class="form-control"
                     value="Rp {{ number_format($invoice->customer->package->price ?? 0,0,',','.') }}" readonly>
             </div>
-
         </div>
 
         {{-- Tahun --}}
@@ -106,9 +107,7 @@
                 @endif
             </div>
             @endforeach
-
         </div>
-
 
         {{-- Legend Warna --}}
         <div class="mt-4">
@@ -132,10 +131,6 @@
     </div>
 </div>
 
-
-
-
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function confirmPrint(invoiceId) {
@@ -155,10 +150,8 @@ function confirmPrint(invoiceId) {
 }
 </script>
 
-
 {{-- Sertakan modal payment --}}
 @include('invoices.payment_modal')
-
 @endsection
 
 @section('scripts')
