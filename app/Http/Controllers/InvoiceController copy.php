@@ -17,67 +17,72 @@ class InvoiceController extends Controller
 {
     $query = Invoice::with('customer.package');
 
-    // 🔎 Filter berdasarkan nama customer atau nomor invoice
+  // 🔎 Filter berdasarkan nama customer atau nomor invoice
     if ($request->search) {
         $search = $request->search;
         $query->where(function ($q) use ($search) {
             $q->whereHas('customer', function ($qc) use ($search) {
                 $qc->where('name', 'like', '%' . $search . '%');
             })
-            ->orWhere('invoice_number', 'like', '%' . $search . '%'); // nomor invoice
+            ->orWhere('id', 'like', '%' . $search . '%'); // invoice id
         });
     }
 
-    // Filter bulan & tahun
-    if ($request->filled('month') || $request->filled('year')) {
-        $year = $request->year ?? date('Y');
-        $month = $request->month;
+    $invoices = $query->orderBy('period', 'desc')->paginate(10);
+// Filter bulan & tahun
+if ($request->filled('month') || $request->filled('year')) {
+    $year = $request->year ?? date('Y');
+    $month = $request->month;
 
-        if ($month) {
-            $query->where('period', 'like', "$year-$month%");
-        } else {
-            $query->where('period', 'like', "$year-%");
-        }
-    }
-
-    // Filter dusun
-    if ($request->dusun && $request->dusun !== 'all') {
-        $query->whereHas('customer', function($q) use ($request) {
-            $q->where('dusun', $request->dusun);
-        });
-    }
-
-    // Filter status
-    if ($request->filled('status') && $request->status !== '') {
-        if ($request->status === 'overdue') {
-            $query->where('status', 'unpaid')
-                  ->whereDate('due_date', '<', now());
-        } else {
-            $query->where('status', $request->status);
-        }
-    }
-
-    // 🔹 Per Page (10,25,50,100,200,500,all)
-    $perPage = $request->get('per_page', 10);
-    if ($perPage === 'all') {
-        $invoices = $query->orderBy('period', 'desc')->get();
+    if ($month) {
+        $query->where('period', 'like', "$year-$month%");
     } else {
-        $invoices = $query->orderBy('period', 'desc')->paginate((int)$perPage);
-        $invoices->appends($request->all()); // biar filter tetap nyangkut di pagination
+        $query->where('period', 'like', "$year-%");
     }
+}
+
+// Filter dusun
+$query->whereHas('customer', function($q) use ($request) {
+    if ($request->dusun && $request->dusun !== 'all') {
+        $q->where('dusun', $request->dusun);
+    }
+});
+
+
+// Filter status
+if ($request->filled('status') && $request->status !== '') {
+    if ($request->status === 'overdue') {
+        $query->where('status', 'unpaid')
+              ->whereDate('due_date', '<', now());
+    } else {
+        $query->where('status', $request->status);
+    }
+}
+
+$invoices = $query->orderBy('period', 'desc')->paginate(10);
+
 
     // Data Dusun untuk select
-    $dusuns = [
-        'all' => 'Semua Dusun',
-        'rumasan'=> 'Rumasan',
-        'rimalang'=> 'Rimalang',
-        'semangeng'=> 'Semangeng',
-        'mangonan'=> 'Mangonan',
-        'pedoyo'=> 'Pedoyo',
-    ];
+    // $dusuns = ['all' => 'Semua Dusun', 'rumasan'=> 'Rumasan', 'rimalang'=> 'Rimalang', 'semangeng'=> 'Semangeng', 'mangonan'=> 'Mangonan', 'pedoyo'=> 'Pedoyo'];
+    
+    // Data Dusun untuk select
+$dusuns = ['all' => 'Semua Dusun',
+    'rumasan'=> 'Rumasan',
+    'rimalang'=> 'Rimalang',
+    'semangeng'=> 'Semangeng',
+    'mangonan'=> 'Mangonan',
+    'pedoyo'=> 'Pedoyo',
+];
 
+
+
+
+
+    
     return view('invoices.index', compact('invoices', 'dusuns'));
 }
+
+
 
 
 

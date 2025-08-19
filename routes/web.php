@@ -7,6 +7,8 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\PaymentController;
+
 
 // Dashboard
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -30,3 +32,6 @@ Route::get('/reports/export', [ReportController::class, 'export'])->name('report
 // QR Scanner
 Route::get('/pindai-qr', [ScanController::class, 'index'])->name('pindaiqr.index');
 Route::get('/invoices/pindaiqr', [InvoiceController::class, 'pindaiqr'])->name('invoices.pindaiqr');
+
+
+Route::post('/payments/store', [PaymentController::class, 'store'])->name('payments.store');

@@ -92,6 +92,7 @@
                     onclick="confirmPrint('{{ $inv->id }}')">
                     {{ $namaBulan }}
                 </button>
+
                 @elseif($inv && $inv->status !== 'paid')
                 <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
                     data-bs-toggle="modal" data-bs-target="#paymentModal" data-invoice-id="{{ $inv->id }}"

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Tagihan - ' )
+@section('title', 'Detail Tagihan - ' . $invoice->customer->name)
 
 @section('content')
 <div class="container">
@@ -12,7 +12,7 @@
         <div class="card-body">
 
             {{-- Informasi Pelanggan --}}
-            <div class="form-group row mb-3">
+            <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Nama Pelanggan</label>
                 <div class="col-sm-3">
                     <input type="text" class="form-control" value="{{ $invoice->customer->name }}" readonly>
@@ -23,8 +23,7 @@
                 </div>
             </div>
 
-
-            <div class="form-group row mb-3">
+            <div class="row mb-3">
                 <label class="col-sm-3 col-form-label">Alamat</label>
                 <div class="col-sm-3">
                     <input type="text" class="form-control" value="{{ $invoice->customer->address ?? '-' }}" readonly>
@@ -36,7 +35,7 @@
                 </div>
             </div>
 
-            <div class="form-group row mb-4">
+            <div class="row mb-4">
                 <label class="col-sm-3 col-form-label">Harga Paket</label>
                 <div class="col-sm-3">
                     <input type="text" class="form-control"
@@ -44,7 +43,6 @@
                 </div>
             </div>
 
-            {{-- Tahun --}}
             <h5 class="text-center my-4">TAHUN 2025</h5>
 
             {{-- Grid Bulan --}}
@@ -82,20 +80,20 @@
 
                 <div class="col-6 col-sm-4 col-md-3 mb-3">
                     @if($inv && $inv->status === 'paid')
-                    <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
+                    <button type="button" class="btn w-100 p-3 rounded {{ $bg }} {{ $textColor }}"
                         onclick="confirmPrint('{{ $inv->id }}')">
                         {{ $namaBulan }}
                     </button>
+                    {{-- Tombol Belum Bayar --}}
                     @elseif($inv && $inv->status !== 'paid')
-                    <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
-                        data-bs-toggle="modal" data-bs-target="#paymentModal" data-invoice-id="{{ $inv->id }}"
-                        data-invoice-number="{{ $inv->invoice_number }}" data-customer-name="{{ $inv->customer->name }}"
-                        data-invoice-amount="{{ $inv->amount }}">
+                    <button type="button" class="btn w-100 p-3 rounded {{ $bg }} {{ $textColor }}"
+                        onclick="confirmPayment('{{ $inv->id }}', '{{ $inv->invoice_number }}', '{{ $inv->customer->name }}', '{{ $inv->amount }}')">
                         {{ $namaBulan }}
                     </button>
+
                     @else
-                    <button type="button" class="p-3 font-weight-bold rounded {{ $bg }} {{ $textColor }} btn w-100"
-                        onclick="alert('Tagihan untuk bulan {{ $namaBulan }} belum dibuat, hubungi admin!')">
+                    <button type="button" class="btn w-100 p-3 rounded {{ $bg }} {{ $textColor }}"
+                        onclick="alert('Tagihan untuk bulan {{ $namaBulan }} belum dibuat!')">
                         {{ $namaBulan }}
                     </button>
                     @endif
@@ -103,7 +101,7 @@
                 @endforeach
             </div>
 
-            {{-- Legend Warna --}}
+            {{-- Legend --}}
             <div class="mt-4">
                 <h5>Keterangan:</h5>
                 <table class="table table-bordered w-50">
@@ -117,7 +115,7 @@
                     </tr>
                     <tr>
                         <td class="bg-white text-center font-weight-bold">BELUM ADA</td>
-                        <td>Tagihan belum dibuat</td>
+                        <td>Belum dibuat</td>
                     </tr>
                 </table>
             </div>
@@ -126,7 +124,11 @@
     </div>
 </div>
 
-{{-- SweetAlert & Print Script --}}
+@include('payment_modal')
+
+
+
+{{-- SweetAlert --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function confirmPrint(invoiceId) {
@@ -145,31 +147,36 @@ function confirmPrint(invoiceId) {
     });
 }
 </script>
-
-{{-- Sertakan modal payment --}}
-@include('invoices.payment_modal')
-
-@endsection
-
-@section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var paymentModal = document.getElementById('paymentModal');
-    paymentModal.addEventListener('show.bs.modal', function(event) {
-        var button = event.relatedTarget;
-        var invoiceId = button.getAttribute('data-invoice-id');
-        var invoiceNumber = button.getAttribute('data-invoice-number');
-        var customerName = button.getAttribute('data-customer-name');
-        var amount = button.getAttribute('data-invoice-amount');
-
-        // Update modal content
-        paymentModal.querySelector('#modalInvoiceNumber').textContent = invoiceNumber;
-        paymentModal.querySelector('#modalCustomerName').textContent = customerName;
-        paymentModal.querySelector('#modalInvoiceAmount').textContent = 'Rp ' + amount;
-
-        // Set form action untuk patch markAsPaid
-        paymentModal.querySelector('#paymentForm').action = '/invoices/' + invoiceId + '/mark-as-paid';
+function confirmPayment(invoiceId, invoiceNumber, customerName, amount) {
+    Swal.fire({
+        title: 'Konfirmasi Pembayaran',
+        html: `
+            <p>Tagihan <b>${invoiceNumber}</b> milik <b>${customerName}</b></p>
+            <p>Jumlah: <b>Rp ${Number(amount).toLocaleString('id-ID')}</b></p>
+            <p>Apakah Anda ingin melakukan pembayaran sekarang?</p>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Bayar',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Munculkan modal pembayaran dengan data dari invoice
+            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            const paymentModal = document.getElementById('paymentModal');
+            paymentModal.querySelector('[name="invoice_id"]').value = invoiceId;
+            paymentModal.querySelector('.invoice-number').textContent = invoiceNumber;
+            paymentModal.querySelector('.customer-name').textContent = customerName;
+            paymentModal.querySelector('.invoice-amount').textContent =
+                'Rp ' + Number(amount).toLocaleString('id-ID');
+            modal.show();
+        }
     });
-});
+}
 </script>
+
+
+
 @endsection

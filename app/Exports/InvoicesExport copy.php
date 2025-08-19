@@ -5,27 +5,29 @@ namespace App\Exports;
 use App\Models\Invoice;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithEvents;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class InvoicesExport implements FromCollection, WithMapping, WithHeadings, WithColumnFormatting, WithEvents
+class InvoicesExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithEvents, WithColumnFormatting
 {
     protected $period;
     protected $status;
     protected $invoices;
-    protected $totalAmount;
+    protected $totalAmount = 0;
     protected $rowNumber = 0;
 
     public function __construct($period, $status)
     {
-        $this->period = $period; // format YYYY-MM
+        $this->period = $period; // format: YYYY-MM (contoh: 2025-08)
         $this->status = $status;
     }
 
@@ -34,6 +36,7 @@ class InvoicesExport implements FromCollection, WithMapping, WithHeadings, WithC
         $query = Invoice::with(['customer', 'customer.package']);
 
         if ($this->period) {
+            // period disimpan di kolom `period` dengan format YYYY-MM
             $query->where('period', $this->period);
         }
 
@@ -42,9 +45,15 @@ class InvoicesExport implements FromCollection, WithMapping, WithHeadings, WithC
         }
 
         $this->invoices = $query->orderBy('created_at', 'asc')->get();
+
         $this->totalAmount = $this->invoices->sum('amount');
 
         return $this->invoices;
+    }
+
+    public function headings(): array
+    {
+        return [];
     }
 
     public function map($invoice): array
@@ -56,15 +65,13 @@ class InvoicesExport implements FromCollection, WithMapping, WithHeadings, WithC
             $invoice->customer->package->name ?? '-',
             $invoice->amount,
             ucfirst($invoice->status),
-            $invoice->payment_date
-                ? Carbon::parse($invoice->payment_date)->format('d/m/Y')
-                : Carbon::parse($invoice->due_date)->format('d/m/Y'),
+            $invoice->created_at->format('d/m/Y'),
         ];
     }
 
-    public function headings(): array
+    public function styles(Worksheet $sheet)
     {
-        return []; // headings dipakai manual di AfterSheet
+        return [];
     }
 
     public function columnFormats(): array
@@ -80,7 +87,6 @@ class InvoicesExport implements FromCollection, WithMapping, WithHeadings, WithC
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
 
-                // 🎨 Style
                 $titleStyle = [
                     'font' => ['bold' => true, 'size' => 16],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
@@ -97,7 +103,7 @@ class InvoicesExport implements FromCollection, WithMapping, WithHeadings, WithC
                     'borders' => ['top' => ['borderStyle' => Border::BORDER_THICK]],
                 ];
 
-                // 📅 Format Periode
+                // 🔹 Ubah period jadi teks
                 if ($this->period) {
                     $date = Carbon::createFromFormat('Y-m', $this->period);
                     $periodText = $date->locale('id')->translatedFormat('F Y');
@@ -107,58 +113,33 @@ class InvoicesExport implements FromCollection, WithMapping, WithHeadings, WithC
 
                 $statusText = $this->status ? ucfirst($this->status) : 'Semua Status';
 
-                // Insert row untuk header
-                $sheet->insertNewRowBefore(1, 5);
+                $sheet->insertNewRowBefore(1, 4);
 
-                // Judul
                 $sheet->mergeCells('A1:F1');
-                $sheet->setCellValue('A1', 'LAPORAN TAGIHAN JRC WIFI');
+                $sheet->setCellValue('A1', 'LAPORAN INVOICE');
                 $sheet->getStyle('A1')->applyFromArray($titleStyle);
 
-                // Filter
                 $sheet->setCellValue('A3', 'Periode');
                 $sheet->setCellValue('B3', ': ' . $periodText);
                 $sheet->setCellValue('A4', 'Status');
                 $sheet->setCellValue('B4', ': ' . $statusText);
                 $sheet->getStyle('A3:A4')->getFont()->setBold(true);
 
-                // Heading Tabel
-$headerRow = 6;
-$headings = ['No', 'Nama Pelanggan', 'Paket', 'Nominal', 'Status', 'Tanggal Bayar/Tempo'];
-$sheet->fromArray($headings, NULL, 'A' . $headerRow);
-$sheet->getStyle('A' . $headerRow . ':F' . $headerRow)->applyFromArray($headerStyle);
-$sheet->getRowDimension($headerRow)->setRowHeight(20);
+                $headerRow = 6;
+                $headings = ['No', 'Nama Pelanggan', 'Paket', 'Nominal', 'Status', 'Tanggal'];
+                $sheet->fromArray($headings, NULL, 'A' . $headerRow);
+                $sheet->getStyle('A' . $headerRow . ':F' . $headerRow)->applyFromArray($headerStyle);
+                $sheet->getRowDimension($headerRow)->setRowHeight(20);
 
-// --- Data Tabel ---
-$data = [];
-$no = 1;
-foreach ($this->invoices as $invoice) {
-    $data[] = [
-        $no++,
-        $invoice->customer->name ?? '-',
-        $invoice->customer->package->name ?? '-',
-        number_format($invoice->amount, 0, ',', '.'),
-        ucfirst($invoice->status),
-        $invoice->paid_at ? $invoice->paid_at->format('d-m-Y') : $invoice->due_date->format('d-m-Y'),
-    ];
-}
+                $firstDataRow = $headerRow + 1;
+                $lastRow = $firstDataRow + $this->invoices->count() - 1;
+                $lastRowWithTotal = $lastRow + 1;
 
-// Masukkan data ke sheet mulai baris setelah heading
-$sheet->fromArray($data, NULL, 'A' . ($headerRow + 1));
-
-// Hitung range data
-$firstDataRow = $headerRow + 1;
-$lastRow = $firstDataRow + $this->invoices->count() - 1;
-$lastRowWithTotal = $lastRow + 1;
-
-
-                // Total
                 $sheet->setCellValue("C{$lastRowWithTotal}", "TOTAL");
                 $sheet->setCellValue("D{$lastRowWithTotal}", $this->totalAmount);
                 $sheet->getStyle("C{$lastRowWithTotal}:D{$lastRowWithTotal}")->applyFromArray($totalStyle);
                 $sheet->getStyle("D{$lastRowWithTotal}")->getNumberFormat()->setFormatCode('"Rp "#,##0');
 
-                // Style data rows
                 if ($this->invoices->count() > 0) {
                     $dataRange = 'A' . $firstDataRow . ':F' . $lastRow;
                     $sheet->getStyle($dataRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
@@ -169,7 +150,6 @@ $lastRowWithTotal = $lastRow + 1;
                     $sheet->getStyle('E' . $firstDataRow . ':F' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 }
 
-                // Auto width
                 foreach (range('A', 'F') as $col) {
                     $sheet->getColumnDimension($col)->setAutoSize(true);
                 }

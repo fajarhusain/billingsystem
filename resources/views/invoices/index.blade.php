@@ -37,7 +37,7 @@
                 <div class="col-md-3">
                     <label class="form-label">Cari</label>
                     <input type="text" class="form-control" name="search" value="{{ request('search') }}"
-                        placeholder="Cari pelanggan atau invoice ...">
+                        placeholder="Cari Nama pelanggan ...">
                 </div>
 
                 <!-- Filter Dusun -->
@@ -112,26 +112,34 @@
         </form>
     </div>
 </div>
-
-
-
-
-
-
-
-
-
 <!-- Invoices Table -->
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-primary">
             <i class="fas fa-table me-2"></i> Data Tagihan
         </h6>
+
+        <!-- Filter jumlah data per halaman -->
+        <form method="GET" action="{{ route('invoices.index') }}" class="d-flex align-items-center">
+            @foreach(request()->except('per_page') as $key => $value)
+            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+            @endforeach
+
+            <label class="me-2 mb-0">Tampilkan</label>
+            <select name="per_page" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                @foreach([10,25,50,100,200,500,'all'] as $size)
+                <option value="{{ $size }}" {{ request('per_page',10) == $size ? 'selected' : '' }}>
+                    {{ $size == 'all' ? 'Semua' : $size }}
+                </option>
+                @endforeach
+            </select>
+        </form>
     </div>
+
     <div class="card-body">
         @if($invoices->count() > 0)
         <div class="table-responsive">
-            <table class="table table-bordered table-hover">
+            <table class="table table-bordered table-hover align-middle">
                 <thead class="table-light">
                     <tr>
                         <th>No. Invoice</th>
@@ -157,7 +165,9 @@
                         <td>{{ $invoice->customer->name }}</td>
                         <td>{{ $dusuns[$invoice->customer->dusun] ?? '-' }}</td>
                         <td>
-                            <span class="badge bg-info text-dark">{{ $invoice->customer->package->name }}</span>
+                            <span class="badge bg-info text-dark">
+                                {{ $invoice->customer->package->name }}
+                            </span>
                         </td>
                         <td>{{ $invoice->period }}</td>
                         <td>{{ $invoice->formatted_amount }}</td>
@@ -165,15 +175,15 @@
                         <td>{!! $invoice->status_badge !!}</td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-                                <!-- Detail Invoice -->
-                                <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-sm btn-outline-primary"
+                                <!-- Detail -->
+                                <a href="{{ route('invoices.show', $invoice) }}" class="btn btn-outline-primary"
                                     title="Lihat Invoice">
                                     <i class="fas fa-eye"></i>
                                 </a>
 
-                                <!-- Tombol Bayar -->
+                                <!-- Bayar -->
                                 @if($invoice->status !== 'paid')
-                                <button type="button" class="btn btn-sm btn-outline-success payment-btn"
+                                <button type="button" class="btn btn-outline-success payment-btn"
                                     data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
                                     data-bs-target="#paymentModal" title="Konfirmasi Pembayaran">
                                     <i class="fas fa-credit-card"></i>
@@ -203,9 +213,6 @@
         @endif
     </div>
 </div>
-
-
-
 
 <!-- Single Payment Modal (Reusable) -->
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">

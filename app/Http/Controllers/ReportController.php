@@ -35,17 +35,35 @@ public function index(Request $request)
     return view('reports.index', compact('invoices'));
 }
 
-    public function export(Request $request)
+  public function export(Request $request)
 {
-    $period = $request->get('period');
     $status = $request->get('status');
+    $month  = $request->get('month');
+    $year   = $request->get('year');
 
-    $bulanTahun = $period 
-        ? \Carbon\Carbon::createFromFormat('m/Y', $period)->locale('id')->isoFormat('MMMM YYYY')
-        : now()->locale('id')->isoFormat('MMMM YYYY');
+    $period = null;
+    $fileName = "LAPORAN TAGIHAN JRC WIFI.xlsx"; // default
 
-    $fileName = "Laporan Tagihan JRC Wifi Bulan $bulanTahun.xlsx";
+    if ($month && $year) {
+        // format YYYY-MM untuk filter
+        $period = "{$year}-" . str_pad($month, 2, '0', STR_PAD_LEFT);
 
-    return Excel::download(new InvoicesExport($period, $status), $fileName);
-}
-}
+        // Ambil nama bulan Indonesia
+        $bulan = \Carbon\Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('F');
+
+        $fileName = "LAPORAN TAGIHAN JRC WIFI PERIODE {$bulan} {$year}.xlsx";
+    } elseif ($year) {
+        // hanya tahun
+        $fileName = "LAPORAN TAGIHAN JRC WIFI PERIODE TAHUN {$year}.xlsx";
+    } else {
+        // fallback -> bulan sekarang
+        $bulan = now()->locale('id')->translatedFormat('F');
+        $tahun = now()->year;
+        $fileName = "LAPORAN TAGIHAN JRC WIFI PERIODE {$bulan} {$tahun}.xlsx";
+    }
+
+    return Excel::download(
+        new InvoicesExport($period, $status),
+        $fileName
+    );
+}}
