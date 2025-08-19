@@ -95,9 +95,6 @@
                                             @error('invoice_number')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
-                                            <small class="form-text text-muted">
-                                                Nomor invoice akan di-generate otomatis
-                                            </small>
                                         </div>
 
                                         <!-- Tanggal Invoice -->
@@ -129,9 +126,9 @@
                                             @enderror
                                         </div>
 
-
+                                        <!-- Periode -->
                                         <div class="mb-3">
-                                            <label for="period" class="form-label">Periode</label>
+                                            <label for="period" class="form-label">Periode (Bulan)</label>
                                             <input type="month" name="period" id="period" class="form-control" required>
                                         </div>
 
@@ -171,7 +168,51 @@
                             </div>
 
                             <!-- Kolom Kanan - Detail Pelanggan & Perhitungan -->
+                            <div class="col-md-6">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-calculator mr-1"></i>
+                                            Detail Pelanggan & Total
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="customerDetails" class="mb-3 text-muted text-center">
+                                            <i class="fas fa-user-plus fa-2x mb-2"></i>
+                                            <p>Pilih pelanggan untuk melihat detail</p>
+                                        </div>
 
+                                        <div class="form-group">
+                                            <label for="amount" class="form-label required">
+                                                <i class="fas fa-money-bill mr-1"></i>Jumlah Tagihan
+                                            </label>
+                                            <input type="number" step="0.01" min="0"
+                                                class="form-control @error('amount') is-invalid @enderror" id="amount"
+                                                name="amount" value="{{ old('amount') }}" required>
+                                            @error('amount')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="additional_charges" class="form-label">
+                                                <i class="fas fa-plus-circle mr-1"></i>Biaya Tambahan
+                                            </label>
+                                            <input type="number" step="0.01" min="0"
+                                                class="form-control @error('additional_charges') is-invalid @enderror"
+                                                id="additional_charges" name="additional_charges"
+                                                value="{{ old('additional_charges', 0) }}">
+                                            @error('additional_charges')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="mt-3 text-right">
+                                            <h5>Total: <span id="totalAmount">Rp 0</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -202,69 +243,12 @@
 
 @push('styles')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-<style>
-.card {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border: none;
-}
-
-.card-header {
-    background: linear-gradient(45deg, #007bff, #0056b3);
-    color: white;
-    border-bottom: none;
-}
-
-.form-label.required::after {
-    content: " *";
-    color: #dc3545;
-}
-
-.form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.input-group-text {
-    background-color: #f8f9fa;
-}
-
-.breadcrumb {
-    background-color: transparent;
-    padding: 0.5rem 0;
-}
-
-.breadcrumb-item+.breadcrumb-item::before {
-    content: "›";
-    font-weight: bold;
-}
-
-.alert {
-    border: none;
-    border-radius: 5px;
-}
-
-.select2-container--default .select2-selection--single {
-    height: calc(1.5em + 0.75rem + 2px);
-    padding: 0.375rem 0.75rem;
-    border: 1px solid #ced4da;
-}
-
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: calc(1.5em + 0.75rem);
-}
-
-#totalAmount {
-    font-weight: bold;
-    font-size: 1.3em;
-}
-</style>
 @endpush
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Initialize Select2
     $('#customer_id').select2({
         placeholder: "Ketik nama pelanggan...",
         allowClear: true
@@ -273,132 +257,37 @@ $(document).ready(function() {
     // Customer selection change
     $('#customer_id').on('change', function() {
         const selectedOption = $(this).find('option:selected');
-
         if (selectedOption.val()) {
-            const customerName = selectedOption.text().split(' - ')[0];
-            const packageName = selectedOption.data('package');
-            const packagePrice = selectedOption.data('price');
-            const customerPhone = selectedOption.data('phone');
-            const customerAddress = selectedOption.data('address');
-
-            // Update customer details
             $('#customerDetails').html(`
-                <div class="row">
-                    <div class="col-12">
-                        <h6 class="text-primary">${customerName}</h6>
-                        <p class="mb-1"><i class="fas fa-phone mr-1"></i> ${customerPhone}</p>
-                        <p class="mb-1"><i class="fas fa-map-marker-alt mr-1"></i> ${customerAddress}</p>
-                        <p class="mb-0"><i class="fas fa-box mr-1"></i> <strong>${packageName}</strong></p>
-                    </div>
-                </div>
+                <p><strong>${selectedOption.text()}</strong></p>
+                <p><i class="fas fa-phone mr-1"></i> ${selectedOption.data('phone')}</p>
+                <p><i class="fas fa-map-marker-alt mr-1"></i> ${selectedOption.data('address')}</p>
+                <p><i class="fas fa-box mr-1"></i> ${selectedOption.data('package')}</p>
             `);
-
-            // Set package price as default amount
-            $('#amount').val(packagePrice);
-            calculateTotal();
-        } else {
-            // Reset customer details
-            $('#customerDetails').html(`
-                <div class="text-muted text-center py-3">
-                    <i class="fas fa-user-plus fa-2x mb-2"></i>
-                    <p>Pilih pelanggan untuk melihat detail</p>
-                </div>
-            `);
-            $('#amount').val('');
+            $('#amount').val(selectedOption.data('price'));
             calculateTotal();
         }
     });
 
-    // Calculate total when amount or additional charges change
-    $('#amount, #additional_charges').on('input', function() {
-        calculateTotal();
-    });
-
-    function calculateTotal() {
-        const amount = parseFloat($('#amount').val()) || 0;
-        const additionalCharges = parseFloat($('#additional_charges').val()) || 0;
-        const total = amount + additionalCharges;
-
-        $('#totalAmount').text('Rp ' + total.toLocaleString('id-ID'));
-    }
-
-    // Auto-calculate period end when period start changes
-    $('#period_start').on('change', function() {
-        const startDate = new Date($(this).val());
-        if (startDate) {
-            // Set end date to last day of the same month
-            const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+    // Period auto-fill start and end date
+    $('#period').on('change', function() {
+        const [year, month] = $(this).val().split('-');
+        if (year && month) {
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0);
+            $('#period_start').val(startDate.toISOString().split('T')[0]);
             $('#period_end').val(endDate.toISOString().split('T')[0]);
         }
     });
 
-    // Auto-calculate due date when invoice date changes
-    $('#invoice_date').on('change', function() {
-        const invoiceDate = new Date($(this).val());
-        if (invoiceDate) {
-            // Set due date to 30 days after invoice date
-            const dueDate = new Date(invoiceDate);
-            dueDate.setDate(dueDate.getDate() + 30);
-            $('#due_date').val(dueDate.toISOString().split('T')[0]);
-        }
-    });
+    $('#amount, #additional_charges').on('input', calculateTotal);
 
-    // Form validation
-    $('#invoiceForm').on('submit', function(e) {
-        let isValid = true;
-        let errorMessages = [];
-
-        // Validate customer selection
-        if (!$('#customer_id').val()) {
-            errorMessages.push('Pilih pelanggan terlebih dahulu');
-            isValid = false;
-        }
-
-        // Validate amount
-        const amount = parseFloat($('#amount').val());
-        if (!amount || amount <= 0) {
-            errorMessages.push('Jumlah tagihan harus lebih dari 0');
-            isValid = false;
-        }
-
-        // Validate dates
-        const invoiceDate = new Date($('#invoice_date').val());
-        const dueDate = new Date($('#due_date').val());
-        const periodStart = new Date($('#period_start').val());
-        const periodEnd = new Date($('#period_end').val());
-
-        if (dueDate <= invoiceDate) {
-            errorMessages.push('Tanggal jatuh tempo harus setelah tanggal invoice');
-            isValid = false;
-        }
-
-        if (periodEnd <= periodStart) {
-            errorMessages.push('Periode selesai harus setelah periode mulai');
-            isValid = false;
-        }
-
-        if (!isValid) {
-            e.preventDefault();
-            alert('Mohon perbaiki kesalahan berikut:\n' + errorMessages.join('\n'));
-            return false;
-        }
-
-        // Disable submit button to prevent double submission
-        $('#submitBtn').prop('disabled', true).html(
-            '<i class="fas fa-spinner fa-spin mr-1"></i>Membuat Invoice...');
-    });
-
-    // Reset button if there are errors
-    if ($('.alert-danger').length > 0) {
-        $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Buat Invoice');
+    function calculateTotal() {
+        const amount = parseFloat($('#amount').val()) || 0;
+        const additionalCharges = parseFloat($('#additional_charges').val()) || 0;
+        $('#totalAmount').text('Rp ' + (amount + additionalCharges).toLocaleString('id-ID'));
     }
 
-    // Auto-hide alerts
-    setTimeout(function() {
-        $('.alert').fadeOut('slow');
-    }, 5000);
-
-    // Initialize calculation on page load
     calculateTotal();
 });
 </script>

@@ -118,37 +118,49 @@ class InvoiceController extends Controller
             ->with('success', 'Tagihan berhasil dibuat!');
     }
 
-    public function generateMonthly(Request $request)
-    {
-        $validated = $request->validate([
-            'period' => 'required|date_format:Y-m',
-            'due_date' => 'required|date'
-        ]);
+          public function generateMonthly(Request $request)
+{
+    $request->validate([
+        'period' => 'required',
+        'due_date' => 'required|date',
+    ]);
 
-        $activeCustomers = Customer::where('status', 'active')->with('package')->get();
-        $generatedCount = 0;
+    $customers = Customer::all();
+    $count = 0; // counter untuk invoice yang berhasil dibuat
 
-        foreach ($activeCustomers as $customer) {
-            // Check if invoice already exists
-            $existingInvoice = Invoice::where('customer_id', $customer->id)
-                ->where('period', $validated['period'])
-                ->first();
+    foreach ($customers as $customer) {
+        // cek invoice sudah ada untuk customer & period
+        $existingInvoice = Invoice::where('customer_id', $customer->id)
+            ->where('period', $request->period)
+            ->first();
 
-            if (!$existingInvoice) {
-                Invoice::create([
-                    'invoice_number' => Invoice::generateInvoiceNumber($customer->id, $validated['period']),
-                    'customer_id' => $customer->id,
-                    'period' => $validated['period'],
-                    'amount' => $customer->package->price,
-                    'due_date' => $validated['due_date']
-                ]);
-                $generatedCount++;
-            }
+        if ($existingInvoice) {
+            continue; // lewati jika sudah ada
         }
 
-        return redirect()->route('invoices.index')
-            ->with('success', "{$generatedCount} tagihan berhasil di-generate untuk periode {$validated['period']}!");
+        // generate invoice_number
+        $invoiceNumber = Invoice::generateInvoiceNumber($customer->id, $request->period);
+
+        Invoice::create([
+            'invoice_number' => $invoiceNumber,
+            'customer_id' => $customer->id,
+            'period' => $request->period,
+            'due_date' => $request->due_date,
+            'amount' => $customer->package->price ?? 0,
+            'status' => 'unpaid',
+        ]);
+
+         $count++;
     }
+
+    return redirect()->route('invoices.index')
+        ->with('success', "Berhasil generate $count invoice.");
+
+}
+
+    
+
+
 
 public function show(Invoice $invoice)
 {

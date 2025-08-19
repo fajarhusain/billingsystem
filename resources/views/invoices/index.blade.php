@@ -4,6 +4,23 @@
 
 @section('content')
 
+<!-- {{-- 🔔 Notifikasi --}}
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="fas fa-check-circle me-2"></i>
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif -->
+
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <!-- <h1 class="h3 mb-0 text-gray-800">
@@ -13,11 +30,20 @@
         <a href="{{ route('invoices.create') }}" class="btn btn-sm btn-primary shadow-sm me-1">
             <i class="fas fa-plus fa-sm text-white-50"></i> Buat Tagihan
         </a>
+    </div>
+    <!-- Tombol Generate di halaman index -->
+    <div class="col-6">
+        <button type="button" class="btn btn-warning w-100 py-3" data-bs-toggle="modal" data-bs-target="#generateModal">
+            <i class="fas fa-calendar-alt fa-lg d-block mb-2"></i>
+            Generate<br>Bulanan
+        </button>
+    </div>
 
 
-
-        <a href="{{ route('pindaiqr.index') }}" class="btn btn-sm btn-success shadow-sm">
-            <i class="fas fa-qrcode fa-sm text-white-50"></i> Pindai QR
+    <div class="col-6">
+        <a href="{{ route('pindaiqr.index') }}" class="btn btn-success w-100 py-3 text-white text-center">
+            <i class="fas fa-qrcode fa-lg d-block mb-2"></i>
+            Pindai QR
         </a>
     </div>
 </div>
@@ -106,6 +132,8 @@
                     <a href="{{ route('invoices.index') }}" class="btn btn-secondary">
                         <i class="fas fa-sync-alt me-1"></i> Reset
                     </a>
+
+
                 </div>
 
             </div>
@@ -279,6 +307,12 @@
     </div>
 </div>
 
+@include('invoices.generate')
+<!-- Bootstrap 5 JS Bundle (Popper sudah termasuk) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -306,5 +340,20 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+@if(session('success'))
+Swal.fire({
+    icon: 'success',
+    title: 'Berhasil!',
+    text: '{{ session('
+    success ') }}',
+    timer: 3000,
+    showConfirmButton: false
+});
+@endif
+</script>
+
 
 @endsection

@@ -24,6 +24,8 @@ Route::get('/invoices/export', [InvoiceController::class, 'export'])->name('invo
 Route::patch('/invoices/{invoice}/mark-as-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.markAsPaid');
 Route::get('/invoices/{id}/print', [InvoiceController::class, 'print'])->name('invoices.print');
 Route::get('/invoices/detailtagihancustomer/{id}', [InvoiceController::class, 'detailTagihanCustomer'])->name('invoices.detailTagihanCustomer');
+Route::post('/invoices/generate', [InvoiceController::class, 'generateMonthly'])->name('invoices.generate');
+
 
 // Reports
 Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

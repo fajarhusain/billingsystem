@@ -33,7 +33,7 @@
                         <tr>
                             <th>QR Code</th>
                             <td class="text-center">
-                                {!! QrCode::size(150)->generate($customer->id) !!}
+                                {!! QrCode::size(150)->generate($customer->unique_code) !!}
 
                             </td>
                         </tr>
